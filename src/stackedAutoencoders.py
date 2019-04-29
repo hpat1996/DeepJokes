@@ -9,7 +9,7 @@ import torch.optim as optim
 import torch.utils.data
 from torch.autograd import Variable
 
-f = open("./jester-data-1.csv")
+f = open("../data/jester-data-1.csv")
 users = 24983
 jokes = 100
 
