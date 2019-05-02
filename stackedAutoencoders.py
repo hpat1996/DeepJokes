@@ -27,10 +27,10 @@ NUM_DEV             = 0.1
 NUM_TEST            = 0.2
 
 # Hyperparameters for the model
-LEARNING_RATE       = 0.00001
-WEIGHT_DECAY        = 0.8
+LEARNING_RATE       = 0.01
+WEIGHT_DECAY        = 0.0
 
-NUM_ITERATIONS      = 100
+NUM_ITERATIONS      = 500
 
 
 # Normalize the ratings in the data set.
@@ -97,11 +97,20 @@ class StackedAutoEncoder(nn.Module):
         x = self.ae4(x)
         return x
 
-def MSEloss(predicted, actual, size_average=False):
+def MSEloss(predicted, actual):
+    # Get the mask
     mask = actual != 0
-    num_ratings = torch.sum(mask.float())
-    criterion = nn.MSELoss(reduction='sum' if not size_average else 'mean')
-    return criterion(predicted * mask.float(), actual), Variable(torch.Tensor([1.0])) if size_average else num_ratings
+    mask = mask.float()
+
+    # Mask the columns in the output where the input is unrated
+    predicted = predicted * mask
+
+    # Total number of ratings
+    num_ratings = torch.sum(mask)
+
+    # Calculate the square of the errors
+    error = torch.sum((actual - predicted) ** 2)
+    return error, num_ratings
 
 stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
 train_data          = torch.tensor(train_data, device = DEVICE, dtype=torch.float)
@@ -110,16 +119,11 @@ optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = LEARNING_
 print("Training...")
 # Train the model
 for i in range(NUM_ITERATIONS):
-    train_loss = 0.0
-    bar = Bar('Training', max=num_users)
-    for user in range(num_users):
-        bar.next()
-        predicted_ratings = stackedAutoEncoder(train_data[user])
-        optimizer.zero_grad() 
-        loss, num_ratings = MSEloss(predicted_ratings, train_data[user])
-        loss = loss / num_ratings
-        train_loss += loss.data.item()
-        loss.backward()
-        optimizer.step()
+    predicted_ratings = stackedAutoEncoder(train_data)
+    optimizer.zero_grad() 
+    loss, num_ratings = MSEloss(predicted_ratings, train_data)
+    loss = loss / num_ratings
+    loss.backward()
+    optimizer.step()
 
-    print('   Epoch #', (i + 1), ': Training loss: ', train_loss/num_users)
+    print('   Epoch #', (i + 1), ': Training loss: ', loss.data.item())
