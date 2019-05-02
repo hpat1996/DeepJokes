@@ -81,7 +81,7 @@ class StackedAutoEncoder(nn.Module):
         )
         self.ae3 = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
-            nn.Sigmoid(),
+            nn.Tanh(),
             nn.Linear(hidden_dim, output_dim)
         )
         self.ae4 = nn.Sequential(
