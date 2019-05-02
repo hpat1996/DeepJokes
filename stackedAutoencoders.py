@@ -1,3 +1,4 @@
+import sys
 import math
 from progress.bar import Bar
 import numpy as np
@@ -30,7 +31,7 @@ NUM_TEST            = 0.2
 LEARNING_RATE       = 0.01
 WEIGHT_DECAY        = 0.0
 
-NUM_ITERATIONS      = 500
+NUM_ITERATIONS      = 200
 
 
 # Normalize the ratings in the data set.
@@ -63,6 +64,10 @@ train_data  [:,                     :num_train]                     = data[:,   
 dev_data    [:, num_train           :num_train+num_dev]             = data[:, num_train           :num_train+num_dev]
 test_data   [:, num_train+num_dev   :num_train+num_dev+num_test]    = data[:, num_train+num_dev   :num_train+num_dev+num_test]
 
+
+train_data  = torch.tensor(train_data, device = DEVICE, dtype=torch.float)
+dev_data    = torch.tensor(dev_data, device = DEVICE, dtype=torch.float)
+test_data   = torch.tensor(test_data, device = DEVICE, dtype=torch.float)
 
 # The stacked auto encoder model
 class StackedAutoEncoder(nn.Module):
@@ -124,18 +129,49 @@ def MSEloss(predicted, actual):
     error = torch.sum((actual - predicted) ** 2)
     return error, num_ratings
 
-stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
-train_data          = torch.tensor(train_data, device = DEVICE, dtype=torch.float)
-optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
 
-print("Training...")
-# Train the model
-for i in range(NUM_ITERATIONS):
-    predicted_ratings = stackedAutoEncoder(train_data)
-    optimizer.zero_grad() 
-    loss, num_ratings = MSEloss(predicted_ratings, train_data)
+mode = sys.argv[1]
+
+if (mode == 'train'):
+    # Training on train data
+    stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
+    optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+
+    print("Training...")
+    # Train the model
+    for i in range(NUM_ITERATIONS):
+        predicted_ratings = stackedAutoEncoder(train_data)
+        optimizer.zero_grad() 
+        loss, num_ratings = MSEloss(predicted_ratings, train_data)
+        loss = loss / num_ratings
+        loss.backward()
+        optimizer.step()
+
+        print('Epoch #', (i + 1), ': Training loss: ', loss.data.item())
+
+    torch.save(stackedAutoEncoder, "model")
+
+elif (mode == 'eval'):
+    # Evaluating on dev data
+    stackedAutoEncoder = torch.load("model")
+    print("Evaluating...")
+
+    predicted_ratings = stackedAutoEncoder(dev_data)
+    loss, num_ratings = MSEloss(predicted_ratings, dev_data)
     loss = loss / num_ratings
-    loss.backward()
-    optimizer.step()
+    
+    print('Loss: ', loss.data.item())
 
-    print('   Epoch #', (i + 1), ': Training loss: ', loss.data.item())
+elif (mode == 'test'):
+    # Testing on test data
+    stackedAutoEncoder = torch.load("model")
+    print("Testing...")
+
+    predicted_ratings = stackedAutoEncoder(test_data)
+    loss, num_ratings = MSEloss(predicted_ratings, test_data)
+    loss = loss / num_ratings
+    
+    print('Loss: ', loss.data.item())
+    
+else:
+    print("Usage: python3 stackedAutoencoders.py <train | eval | test>")
