@@ -76,7 +76,7 @@ class StackedAutoEncoder(nn.Module):
         )
         self.ae2 = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
-            nn.Sigmoid(),
+            nn.Tanh(),
             nn.Linear(hidden_dim, output_dim)
         )
         self.ae3 = nn.Sequential(
@@ -89,12 +89,24 @@ class StackedAutoEncoder(nn.Module):
             nn.Sigmoid(),
             nn.Linear(hidden_dim, output_dim)
         )
+        self.ae5 = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, output_dim)
+        )
+        self.ae6 = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, output_dim)
+        )
 
     def forward(self, x):
         x = self.ae1(x)
         x = self.ae2(x)
         x = self.ae3(x)
         x = self.ae4(x)
+        x = self.ae5(x)
+        x = self.ae6(x)
         return x
 
 def MSEloss(predicted, actual):
