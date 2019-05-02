@@ -108,11 +108,12 @@ stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
 train_data          = torch.tensor(train_data, device = DEVICE, dtype=torch.float)
 optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
 
-# Train the mdoel
+print("Training...")
+# Train the model
 for i in range(NUM_ITERATIONS):
     train_loss = 0.0
     for user in range(num_users):
-        actual_ratings = Variable(train_data[user], requires_grad=False)
+        actual_ratings = Variable(train_data[user], requires_grad=False).unsqueeze(0)
         predicted_ratings = stackedAutoEncoder(actual_ratings)
 
         optimizer.zero_grad()
