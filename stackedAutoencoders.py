@@ -1,9 +1,8 @@
 import math
-
+from progress.bar import Bar
 import numpy as np
 
 import torch
-
 from torch.autograd import Variable
 
 import torch.nn as nn
@@ -21,14 +20,14 @@ DATA_FILE           = "data/jester-data.csv"
 UNKNOWN_RATING      = 99
 MIN_RATING          = -10
 MAX_RATING          = 10
-DESIRED_NUM_RATING  = 4
+DESIRED_NUM_RATING  = 5
 
 NUM_TRAIN           = 0.7
 NUM_DEV             = 0.1
 NUM_TEST            = 0.2
 
 # Hyperparameters for the model
-LEARNING_RATE       = 0.001
+LEARNING_RATE       = 0.00001
 WEIGHT_DECAY        = 0.8
 
 NUM_ITERATIONS      = 100
@@ -36,12 +35,12 @@ NUM_ITERATIONS      = 100
 
 # Normalize the ratings in the data set.
 # Unknown rating -> 0
-# Known ratings -> [1, 1 + DESIRED_NUM_RATING]
+# Known ratings -> [1, DESIRED_NUM_RATING]
 def normalizeData(n):
     if n == UNKNOWN_RATING:
         return 0
     mid = (MAX_RATING - MIN_RATING) / 2
-    return math.ceil((n + mid) / DESIRED_NUM_RATING)
+    return math.ceil((n + mid) / (DESIRED_NUM_RATING - 1))
 
 # Load the data from the file
 # Discard first column as it is not useful
@@ -112,16 +111,15 @@ print("Training...")
 # Train the model
 for i in range(NUM_ITERATIONS):
     train_loss = 0.0
+    bar = Bar('Training', max=num_users)
     for user in range(num_users):
-        actual_ratings = Variable(train_data[user], requires_grad=False).unsqueeze(0)
-        predicted_ratings = stackedAutoEncoder(actual_ratings)
-
-        optimizer.zero_grad()
-        loss, num_ratings = MSEloss(predicted_ratings, actual_ratings)
+        bar.next()
+        predicted_ratings = stackedAutoEncoder(train_data[user])
+        optimizer.zero_grad() 
+        loss, num_ratings = MSEloss(predicted_ratings, train_data[user])
         loss = loss / num_ratings
         train_loss += loss.data.item()
-
         loss.backward()
         optimizer.step()
 
-    print('Epoch #', (i + 1), ': Training loss: ', train_loss)
+    print('   Epoch #', (i + 1), ': Training loss: ', train_loss/num_users)
