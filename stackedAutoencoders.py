@@ -22,6 +22,7 @@ MIN_RATING          = -10
 MAX_RATING          = 10
 DESIRED_NUM_RATING  = 5
 
+                    # (% users, % jokes)
 NUM_TRAIN           = (0.7, 0.7)
 
 # Hyperparameters for the model
@@ -32,6 +33,8 @@ NUM_ITERATIONS      = 200
 
 print("\n")
 print("Initializing...")
+
+
 # Normalize the ratings in the data set.
 # Unknown rating -> 0
 # Known ratings -> [1, DESIRED_NUM_RATING]
@@ -49,6 +52,8 @@ data = np.loadtxt(DATA_FILE, dtype=np.float, delimiter=",")[:, 1:]
 data = np.vectorize(normalizeData)(data)
 num_users, num_jokes = data.shape
 
+
+
 # Divide the data into train and test
 num_train_users   = int(NUM_TRAIN[0] * num_users)
 num_train_jokes   = int(NUM_TRAIN[1] * num_jokes)
@@ -61,8 +66,11 @@ train_data  [               :num_train_users,                       :           
 test_data   [num_train_users:               ,   num_train_jokes     :               ]   = data[num_train_users:               ,   num_train_jokes     :               ]
 
 
-train_data  = torch.tensor(train_data, device = DEVICE, dtype=torch.float)
-test_data   = torch.tensor(test_data, device = DEVICE, dtype=torch.float)
+train_data  = torch.tensor(train_data,  device = DEVICE, dtype=torch.float)
+test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
+
+
+
 
 # The stacked auto encoder model
 class StackedAutoEncoder(nn.Module):
@@ -109,6 +117,7 @@ class StackedAutoEncoder(nn.Module):
         x = self.ae6(x)
         return x
 
+
 # MSE Loss function
 def MSEloss(predicted, actual):
     # Get the mask
@@ -127,10 +136,10 @@ def MSEloss(predicted, actual):
 
 
 
-
 mode = sys.argv[1]
 
 if (mode == 'train'):
+
     # Training on train data
     stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
     optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
@@ -163,6 +172,7 @@ if (mode == 'train'):
     
 
 elif (mode == 'test'):
+
     # Testing on test data
     print("Loading model...")
     stackedAutoEncoder = torch.load("model")
@@ -174,6 +184,7 @@ elif (mode == 'test'):
     loss = loss / num_ratings
     
     print("Loss on test data: ", loss.data.item())
+
 
 else:
     print("Usage: python3 stackedAutoencoders.py <train | test>")
