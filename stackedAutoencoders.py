@@ -11,6 +11,8 @@ import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 
+####################################################################################################
+
 # Use GPU if available
 DEVICE              = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -28,12 +30,13 @@ NUM_TRAIN           = (0.7, 0.7)
 # Hyperparameters for the model
 LEARNING_RATE       = 0.01
 WEIGHT_DECAY        = 0.0
-
+LOSS_FUNCTION       = 'RMSE'
 NUM_ITERATIONS      = 200
 
 print("\n")
 print("Initializing...")
 
+####################################################################################################
 
 # Normalize the ratings in the data set.
 # Unknown rating -> 0
@@ -69,8 +72,7 @@ test_data   [num_train_users:               ,   num_train_jokes     :           
 train_data  = torch.tensor(train_data,  device = DEVICE, dtype=torch.float)
 test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
 
-
-
+####################################################################################################
 
 # The stacked auto encoder model
 class StackedAutoEncoder(nn.Module):
@@ -117,9 +119,10 @@ class StackedAutoEncoder(nn.Module):
         x = self.ae6(x)
         return x
 
+####################################################################################################
 
 # MSE Loss function
-def MSEloss(predicted, actual):
+def MSE_Loss(predicted, actual):
     # Get the mask
     mask = actual != 0
     mask = mask.float()
@@ -134,7 +137,19 @@ def MSEloss(predicted, actual):
     error = torch.sum((actual - predicted) ** 2)
     return error, num_ratings
 
+# RMSE Loss function
+def RMSE_Loss(predicted, actual):
+    error, num_ratings = MSE_Loss(predicted, actual)
+    return (error / num_ratings) ** 0.5
 
+def getLoss(predicted, actual, loss_function='MSE'):
+    if (loss_function == 'MSE'):
+        error, num_ratings = MSE_Loss(predicted, actual)
+        return error / num_ratings
+    elif (loss_function == 'RMSE'):
+        return RMSE_Loss(predicted, actual)
+
+####################################################################################################
 
 mode = sys.argv[1]
 
@@ -150,8 +165,7 @@ if (mode == 'train'):
         predicted_ratings = stackedAutoEncoder(train_data)
 
         optimizer.zero_grad() 
-        loss, num_ratings = MSEloss(predicted_ratings, train_data)
-        loss = loss / num_ratings
+        loss = getLoss(predicted_ratings, train_data, LOSS_FUNCTION)
         loss.backward()
         optimizer.step()
 
@@ -161,8 +175,7 @@ if (mode == 'train'):
 
     print("Testing...")
     predicted_ratings = stackedAutoEncoder(test_data)
-    loss, num_ratings = MSEloss(predicted_ratings, test_data)
-    loss = loss / num_ratings
+    loss = getLoss(predicted_ratings, test_data, LOSS_FUNCTION)
     print("Loss on test data: ", loss.data.item())
     print("\n")
 
@@ -180,8 +193,7 @@ elif (mode == 'test'):
     print("Testing...")
 
     predicted_ratings = stackedAutoEncoder(test_data)
-    loss, num_ratings = MSEloss(predicted_ratings, test_data)
-    loss = loss / num_ratings
+    loss = getLoss(predicted_ratings, test_data, LOSS_FUNCTION)
     
     print("Loss on test data: ", loss.data.item())
 
