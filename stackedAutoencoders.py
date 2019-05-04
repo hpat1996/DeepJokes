@@ -33,7 +33,7 @@ NUM_TRAIN                   = (0.7, 0.7)
 # Hyperparameters for the model
 LEARNING_RATE               = 0.01
 WEIGHT_DECAY                = 0.0
-LOSS_FUNCTION               = 'RMSE'
+LOSS_FUNCTION               = 'MSE'
 NUM_ITERATIONS              = 200
 
 print("\n")
@@ -66,7 +66,6 @@ data = np.loadtxt(DATASET_FILE, dtype=np.float, delimiter=",")[:, 1:]
 data = np.vectorize(normalizeData)(data)
 num_users, num_jokes = data.shape
 
-print(data)
 
 # Divide the data into train and test
 num_train_users   = int(NUM_TRAIN[0] * num_users)
