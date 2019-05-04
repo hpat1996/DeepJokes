@@ -14,24 +14,25 @@ import torch.utils.data
 ####################################################################################################
 
 # Use GPU if available
-DEVICE              = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+DEVICE                      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Constants for the data set 
-DATA_FILE           = "data/jester-data.csv"
+DATASET_FILE                = "data/jester-data.csv"
 
-UNKNOWN_RATING      = 99
-MIN_RATING          = -10
-MAX_RATING          = 10
-DESIRED_NUM_RATING  = 5
+DATASET_UNKNOWN_RATING      = 99
+MIN_RATING                  = -10
+MAX_RATING                  = 10
+NORMALIZED_NUM_RATING       = 5
+NORMALIZED_UNKNOWN_RATING   = 0
 
-                    # (% users, % jokes)
-NUM_TRAIN           = (0.7, 0.7)
+                            # (% users, % jokes)
+NUM_TRAIN                   = (0.7, 0.7)
 
 # Hyperparameters for the model
-LEARNING_RATE       = 0.01
-WEIGHT_DECAY        = 0.0
-LOSS_FUNCTION       = 'RMSE'
-NUM_ITERATIONS      = 200
+LEARNING_RATE               = 0.01
+WEIGHT_DECAY                = 0.0
+LOSS_FUNCTION               = 'RMSE'
+NUM_ITERATIONS              = 200
 
 print("\n")
 print("Initializing...")
@@ -42,14 +43,14 @@ print("Initializing...")
 # Unknown rating -> 0
 # Known ratings -> [1, DESIRED_NUM_RATING]
 def normalizeData(n):
-    if n == UNKNOWN_RATING:
-        return 0
+    if n == DATASET_UNKNOWN_RATING:
+        return NORMALIZED_UNKNOWN_RATING
     mid = (MAX_RATING - MIN_RATING) / 2
-    return math.ceil((n + mid) / (DESIRED_NUM_RATING - 1))
+    return math.ceil((n + mid) / (NORMALIZED_NUM_RATING - 1))
 
 # Load the data from the file
 # Discard first column as it is not useful
-data = np.loadtxt(DATA_FILE, dtype=np.float, delimiter=",")[:, 1:]
+data = np.loadtxt(DATASET_FILE, dtype=np.float, delimiter=",")[:, 1:]
 
 # Normalize the data
 data = np.vectorize(normalizeData)(data)
@@ -124,7 +125,7 @@ class StackedAutoEncoder(nn.Module):
 # MSE Loss function
 def MSE_Loss(predicted, actual):
     # Get the mask
-    mask = actual != 0
+    mask = actual != NORMALIZED_UNKNOWN_RATING
     mask = mask.float()
 
     # Mask the columns in the output where the input is unrated
