@@ -1,5 +1,4 @@
 import sys
-import math
 import numpy as np
 
 import torch
@@ -20,10 +19,12 @@ DEVICE                      = torch.device("cuda" if torch.cuda.is_available() e
 DATASET_FILE                = "data/jester-data.csv"
 
 DATASET_UNKNOWN_RATING      = 99
-MIN_RATING                  = -10
-MAX_RATING                  = 10
-NORMALIZED_NUM_RATING       = 5
+DATASET_MIN_RATING          = -10
+DATASET_MAX_RATING          = 10
+
 NORMALIZED_UNKNOWN_RATING   = 0
+NORMALIZED_MIN_RATING       = 1
+NORMALIZED_MAX_RATING       = 5
 
                             # (% users, % jokes)
 NUM_TRAIN                   = (0.7, 0.7)
@@ -40,13 +41,14 @@ print("Initializing...")
 ####################################################################################################
 
 # Normalize the ratings in the data set.
-# Unknown rating -> 0
-# Known ratings -> [1, DESIRED_NUM_RATING]
 def normalizeData(n):
     if n == DATASET_UNKNOWN_RATING:
         return NORMALIZED_UNKNOWN_RATING
-    mid = (MAX_RATING - MIN_RATING) / 2
-    return math.ceil((n + mid) / (NORMALIZED_NUM_RATING - 1))
+
+    n = round(n)
+    dataset_range       = (DATASET_MAX_RATING    -  DATASET_MIN_RATING)
+    normalized_range    = (NORMALIZED_MAX_RATING -  NORMALIZED_MIN_RATING)
+    return round(((n - DATASET_MIN_RATING) * normalized_range) / dataset_range) + NORMALIZED_MIN_RATING
 
 # Load the data from the file
 # Discard first column as it is not useful
@@ -56,7 +58,7 @@ data = np.loadtxt(DATASET_FILE, dtype=np.float, delimiter=",")[:, 1:]
 data = np.vectorize(normalizeData)(data)
 num_users, num_jokes = data.shape
 
-
+print(data)
 
 # Divide the data into train and test
 num_train_users   = int(NUM_TRAIN[0] * num_users)
