@@ -134,17 +134,18 @@ class StackedAutoEncoder(nn.Module):
 # MSE Loss function
 def MSE_Loss(predicted, actual):
     # Get the mask
-    mask = actual != NORMALIZED_UNKNOWN_RATING
-    mask = mask.float()
+    mask        = actual != NORMALIZED_UNKNOWN_RATING
+    mask        = mask.float()
 
     # Mask the columns in the output where the input is unrated
-    predicted = predicted * mask
+    actual      = actual    * mask
+    predicted   = predicted * mask
 
     # Total number of ratings
     num_ratings = torch.sum(mask)
 
     # Calculate the square of the errors
-    error = torch.sum((actual - predicted) ** 2)
+    error       = torch.sum((actual - predicted) ** 2)
     return error, num_ratings
 
 # RMSE Loss function
