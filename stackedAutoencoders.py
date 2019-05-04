@@ -25,6 +25,7 @@ DATASET_MAX_RATING          = 10
 NORMALIZED_UNKNOWN_RATING   = 0
 NORMALIZED_MIN_RATING       = 1
 NORMALIZED_MAX_RATING       = 5
+NORMALIZED_ROUNDED          = True
 
                             # (% users, % jokes)
 NUM_TRAIN                   = (0.7, 0.7)
@@ -46,9 +47,16 @@ def normalizeData(n):
         return NORMALIZED_UNKNOWN_RATING
 
     n = round(n)
+
     dataset_range       = (DATASET_MAX_RATING    -  DATASET_MIN_RATING)
     normalized_range    = (NORMALIZED_MAX_RATING -  NORMALIZED_MIN_RATING)
-    return round(((n - DATASET_MIN_RATING) * normalized_range) / dataset_range) + NORMALIZED_MIN_RATING
+    
+    normalized_n = (((n - DATASET_MIN_RATING) * normalized_range) / dataset_range) + NORMALIZED_MIN_RATING
+
+    if NORMALIZED_ROUNDED:
+        normalized_n = round(normalized_n)
+
+    return normalized_n
 
 # Load the data from the file
 # Discard first column as it is not useful
