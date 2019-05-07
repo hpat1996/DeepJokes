@@ -41,7 +41,7 @@ NUM_TRAIN                   = (0.7, 0.7)
 # Hyperparameters for the model
 LEARNING_RATE               = 0.01
 WEIGHT_DECAY                = 0.0
-LOSS_FUNCTION               = 'MSE'
+LOSS_FUNCTION               = 'MMSE'
 NUM_ITERATIONS              = 100
 
 print("\n")
@@ -147,8 +147,8 @@ class StackedAutoEncoder(nn.Module):
 # LOSS FUNCTIONS
 ####################################################################################################
 
-# MSE Loss function
-def MSE_Loss(predicted, actual):
+# MMSE Loss function
+def MMSE_Loss(predicted, actual):
     # Get the mask
     mask        = actual != NORMALIZED_UNKNOWN_RATING
     mask        = mask.float()
@@ -166,12 +166,12 @@ def MSE_Loss(predicted, actual):
 
 # RMSE Loss function
 def RMSE_Loss(predicted, actual):
-    error, num_ratings = MSE_Loss(predicted, actual)
+    error, num_ratings = MMSE_Loss(predicted, actual)
     return (error / num_ratings) ** 0.5
 
-def getLoss(predicted, actual, loss_function='MSE'):
-    if (loss_function == 'MSE'):
-        error, num_ratings = MSE_Loss(predicted, actual)
+def getLoss(predicted, actual, loss_function='MMSE'):
+    if (loss_function == 'MMSE'):
+        error, num_ratings = MMSE_Loss(predicted, actual)
         return error / num_ratings
     elif (loss_function == 'RMSE'):
         return RMSE_Loss(predicted, actual)
@@ -236,18 +236,46 @@ def plot_images(plot_data, labels, xlabel, ylabel, filename):
     plt.savefig(filename)
     plt.clf()
 
+
 def experiment_learning_rate():
     learning_rates = [i / 100.0 for i in range(1, 10)]
+
     plot_data = []
     labels = []
     for learning_rate in learning_rates:
-        epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "MSE", NUM_ITERATIONS, True)
+        epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
         plot_data.append(epoch_loss[10:])
         labels.append("Learning rate: " + str(learning_rate))
-    plot_images(plot_data, labels, "Epoch", "Mean squared error", "VaryingLearningRate.png")
+    plot_images(plot_data, labels, "Epoch", "Masked Mean squared error", "VaryingLearningRate_MMSE.png")
+
+    plot_data = []
+    labels = []
+    for learning_rate in learning_rates:
+        epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, True)
+        plot_data.append(epoch_loss[10:])
+        labels.append("Learning rate: " + str(learning_rate))
+    plot_images(plot_data, labels, "Epoch", "Root Mean squared error", "VaryingLearningRate_RMSE.png")
+
+
+def experiment_loss_functions():
+    learning_rate = 0.01
+    plot_data = []
+    labels = []
+
+    epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
+    plot_data.append(epoch_loss[10:])
+    labels.append("MMSE")
+
+    epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, True)
+    plot_data.append(epoch_loss[10:])
+    labels.append("RMSE")
+
+    plot_images(plot_data, labels, "Epoch", "Error", "VaryingLossFunction.png")
+
 
 def run_experiments():
     experiment_learning_rate()
+    experiment_loss_functions()
 
 ####################################################################################################
 # USER INTERACTION FOR TRAINING AND TESTING MODELS
