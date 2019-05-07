@@ -268,6 +268,7 @@ elif (mode == 'test'):
     test(stackedAutoEncoder, LOSS_FUNCTION)
 
 elif (mode == 'exp'):
+    # Run the experiments
     run_experiments()
 
 else:
