@@ -100,7 +100,7 @@ test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
 
 # The stacked auto encoder model
 class StackedAutoEncoder(nn.Module):
-    def __init__(self, input_dim = num_jokes, hidden_dim = 5, output_dim = num_jokes, num_stack = 4):
+    def __init__(self, input_dim = num_jokes, hidden_dim = 5, output_dim = num_jokes):
         super(StackedAutoEncoder, self).__init__()
 
         self.ae1 = nn.Sequential(
