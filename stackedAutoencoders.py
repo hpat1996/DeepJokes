@@ -39,7 +39,7 @@ NORMALIZED_ROUNDED          = True
 NUM_TRAIN                   = (0.7, 0.7)
 
 # Hyperparameters for the model
-LEARNING_RATE               = 0.01
+LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
 LOSS_FUNCTION               = 'MMSE'
 NUM_ITERATIONS              = 100
@@ -74,6 +74,7 @@ data = np.loadtxt(DATASET_FILE, dtype=np.float, delimiter=",")[:, 1:]
 
 # Normalize the data
 data = np.vectorize(normalizeData)(data)
+np.random.shuffle(data)
 num_users, num_jokes = data.shape
 
 
