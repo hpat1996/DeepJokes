@@ -23,7 +23,7 @@ import torch.utils.data
 # Use GPU if available
 DEVICE                      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Constants for the data set 
+# Constants for the data set
 DATASET_FILE                = "data/jester-data.csv"
 
 DATASET_UNKNOWN_RATING      = 99
@@ -60,7 +60,7 @@ def normalizeData(n):
 
     dataset_range       = (DATASET_MAX_RATING    -  DATASET_MIN_RATING)
     normalized_range    = (NORMALIZED_MAX_RATING -  NORMALIZED_MIN_RATING)
-    
+
     normalized_n = (((n - DATASET_MIN_RATING) * normalized_range) / dataset_range) + NORMALIZED_MIN_RATING
 
     if NORMALIZED_ROUNDED:
@@ -87,8 +87,8 @@ train_data.fill(NORMALIZED_UNKNOWN_RATING)
 test_data   = np.zeros(shape=data.shape)
 test_data.fill(NORMALIZED_UNKNOWN_RATING)
 
-train_data  [               :               ,                       :num_train_jokes]   = data[               :               ,                       :num_train_jokes] 
-train_data  [               :num_train_users,                       :               ]   = data[               :num_train_users,                       :               ] 
+train_data  [               :               ,                       :num_train_jokes]   = data[               :               ,                       :num_train_jokes]
+train_data  [               :num_train_users,                       :               ]   = data[               :num_train_users,                       :               ]
 test_data   [num_train_users:               ,   num_train_jokes     :               ]   = data[num_train_users:               ,   num_train_jokes     :               ]
 
 
@@ -147,6 +147,30 @@ class StackedAutoEncoder(nn.Module):
 ####################################################################################################
 # LOSS FUNCTIONS
 ####################################################################################################
+def Precision_Recall(predicted, actual):
+    actual_cloned = actual.detach().numpy()
+    predicted_cloned = predicted.detach().numpy()
+    precision = 0.0
+    recall = 0.0
+    for i in range(0, actual_cloned.shape[0]):
+        relevant_items = set(filter(lambda j : actual_cloned[i][j] >= 3.0, np.arange(0, actual_cloned.shape[1])))
+        top_k_rec = np.argsort(-predicted_cloned[i])[:10]
+        top_k_rec_filtered = set(filter(lambda j : predicted_cloned[i][j] >= 3.0,  top_k_rec))
+        length1 = len(top_k_rec_filtered)
+        length2 = len(relevant_items)
+        val = len(relevant_items.intersection(top_k_rec_filtered))
+        if length1 == 0:
+            precision += 1
+        else:
+            precision += val/float(length1)
+        if length2 == 0:
+            recall += 1
+        else:
+            recall += val/float(length2)
+    return ((precision/actual_cloned.shape[0], recall/actual_cloned.shape[0]))
+
+
+
 
 # MMSE Loss function
 def MMSE_Loss(predicted, actual):
@@ -192,14 +216,16 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
     for i in range(num_iterations):
         predicted_ratings = stackedAutoEncoder(train_data)
 
-        optimizer.zero_grad() 
+        optimizer.zero_grad()
         loss = getLoss(predicted_ratings, train_data, loss_function)
+        precision, recall = Precision_Recall(predicted_ratings, train_data)
         loss.backward()
         optimizer.step()
 
         epoch_loss.append((i + 1, loss.data.item()))
         print("Epoch #", (i + 1), ": Training loss: ", loss.data.item())
-
+        print("Epoch #", (i + 1), ": Precision: ", precision)
+        print("Epoch #", (i + 1), ": Recall: ", recall)
     print("Training finished.\n")
 
     test_loss = test(stackedAutoEncoder, loss_function)
@@ -208,7 +234,7 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
         print("Saving model...")
         torch.save(stackedAutoEncoder, "model")
         print("Saved model.")
-    
+
     return epoch_loss, test_loss
 
 
@@ -304,4 +330,3 @@ else:
     print("Usage: python3 stackedAutoencoders.py <train | test | exp>")
 
 print('\n')
-
