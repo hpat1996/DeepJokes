@@ -1,4 +1,0 @@
-dev_lost: 0.7487011167592653 - format: [('LeakyReLU', 6)]
-dev_lost: 0.832374014329746 - format: [('Tanh', 6)]
-dev_lost: 0.8810150902614005 - format: [('ReLU', 6)]
-dev_lost: 1.0 - format: [('Sigmoid', 6)]

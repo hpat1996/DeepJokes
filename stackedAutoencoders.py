@@ -46,7 +46,7 @@ OPTIMIZER                   = 'Adam'
 NUM_ITERATIONS              = 100
 ACTIVATION_FORMAT           = [('Sigmoid',1), ('Tanh',4), ('ReLU', 1)]
 HIDDEN_DIMENSION            = 5
-    
+
 print("\n")
 print("Initializing...")
 
@@ -267,7 +267,7 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
     epoch_loss = []
     precisions = []
     recalls    = []
-    
+
     for i in range(num_iterations):
         predicted_ratings = stackedAutoEncoder(train_data)
 
@@ -284,7 +284,7 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
         print("Epoch #", (i + 1), ": Precision: ", precision)
         print("Epoch #", (i + 1), ": Recall: ", recall)
     print("Training finished.\n")
-    
+
     dev_loss = dev(stackedAutoEncoder, loss_function)
     test_loss = test(stackedAutoEncoder, loss_function)
 
@@ -378,10 +378,7 @@ def experiment_activation_function():
         dev_loss_list.append(dev_loss)
         precision_list.append(precision)
         recall_list.append(recall)
-        
-    # Assign Activation Format the format with lowest dev error
-    ACTIVATION_FORMAT = formats[np.argmin(dev_loss_list)]
-    
+
     # Plot loss function
     sorted_idx = np.argsort(dev_loss_list)
     plot_data = []
@@ -389,11 +386,11 @@ def experiment_activation_function():
     for idx in sorted_idx[:10]:
         plot_data.append(epoch_loss_list[idx])
         labels.append(str(formats[idx]))
-    plot_images(plot_data, labels, "Epoch", LOSS_FUNCTION, LOSS_FUNCTION + "_VaryingActivationFuns.png")
-    with open(LOSS_FUNCTION + '_VaryingActivationFuns.txt', 'w') as f:
+    plot_images(plot_data, labels, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingActivationFuns.png")
+    with open("results/" + LOSS_FUNCTION + "_VaryingActivationFuns.txt", 'w') as f:
         for idx in sorted_idx:
             f.write('dev_lost: ' + str(dev_loss_list[idx]) + ' - format: ' + str(formats[idx]) + '\n')
-    
+
     # Plot Precision
     min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
     sorted_idx = np.argsort(min_precision_list)
@@ -402,11 +399,11 @@ def experiment_activation_function():
     for idx in sorted_idx[:10]:
         plot_data.append(precision_list[idx])
         labels.append(str(formats[idx]))
-    plot_images(plot_data, labels, "Epoch", "Precision", "Precision_VaryingActivationFuns.png")
-    with open('Precision_VaryingActivationFuns.txt', 'w') as f:
+    plot_images(plot_data, labels, "Epoch", "Precision", "results/Precision_VaryingActivationFuns.png")
+    with open("results/Precision_VaryingActivationFuns.txt", 'w') as f:
         for idx in sorted_idx:
             f.write('dev_lost: ' + str(min_precision_list[idx]) + ' - format: ' + str(formats[idx]) + '\n')
-    
+
     # Plot Recall
     min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
     sorted_idx = np.argsort(min_recall_list)
@@ -415,10 +412,12 @@ def experiment_activation_function():
     for idx in sorted_idx[:10]:
         plot_data.append(recall_list[idx])
         labels.append(str(formats[idx]))
-    plot_images(plot_data, labels, "Epoch", "Recall", "Recall_VaryingActivationFuns.png")
-    with open('Recall_VaryingActivationFuns.txt', 'w') as f:
+    plot_images(plot_data, labels, "Epoch", "Recall", "results/Recall_VaryingActivationFuns.png")
+    with open("results/Recall_VaryingActivationFuns.txt", 'w') as f:
         for idx in sorted_idx:
             f.write('dev_lost: ' + str(min_recall_list[idx]) + ' - format: ' + str(formats[idx]) + '\n')
+
+    return formats[np.argmin(dev_loss_list)]
 
 def experiment_optimizers():
     optimizer_list = ['adagrad', 'sgd', 'rmsprop', 'adam']
@@ -435,35 +434,34 @@ def experiment_optimizers():
         dev_loss_list.append(dev_loss)
         precision_list.append(precision)
         recall_list.append(recall)
-    
-    # Assign OPTIMIZEr to the optimizer with lowest dev error
-    OPTIMIZER = optimizer_list[np.argmin(dev_loss_list)]
-    
+
     # Plot loss function
     sorted_idx = np.argsort(dev_loss_list)
-    plot_images(epoch_loss_list, optimizer_list, "Epoch", LOSS_FUNCTION, LOSS_FUNCTION + "_VaryingOptimizers.png")
-    with open(LOSS_FUNCTION + '_VaryingOptimizers.txt', 'w') as f:
+    plot_images(epoch_loss_list, optimizer_list, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingOptimizers.png")
+    with open("results/" + LOSS_FUNCTION + '_VaryingOptimizers.txt', 'w') as f:
         for idx in sorted_idx:
             f.write('dev_lost: ' + dev_loss_list[idx] + ' - optimizer: ' + optimizer_list[idx] + '\n')
-    
+
     # Plot Precision
     min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
     sorted_idx = np.argsort(min_precision_list)
-    plot_images(precision_list, optimizer_list, "Epoch", "Precision", "Precision_VaryingOptimizers.png")
-    with open('Precision_VaryingOptimizers.txt', 'w') as f:
+    plot_images(precision_list, optimizer_list, "Epoch", "Precision", "results/Precision_VaryingOptimizers.png")
+    with open("results/Precision_VaryingOptimizers.txt", 'w') as f:
         for idx in sorted_idx:
-            f.write('dev_lost: ' + min_precision_list[idx] + ' - optimizer: ' + optimizer_list[idx] + '\n'))
-    
+            f.write('dev_lost: ' + min_precision_list[idx] + ' - optimizer: ' + optimizer_list[idx] + '\n')
+
     # Plot Recall
     min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
     sorted_idx = np.argsort(min_recall_list)
-    plot_images(recall_list, optimizer_list, "Epoch", "Recall", "Recall_VaryingOptimizers.png")
-    with open('Recall_VaryingOptimizers.txt', 'w') as f:
+    plot_images(recall_list, optimizer_list, "Epoch", "Recall", "results/Recall_VaryingOptimizers.png")
+    with open("results/Recall_VaryingOptimizers.txt", 'w') as f:
         for idx in sorted_idx:
             f.write('dev_lost: ' + min_recall_list[idx] + ' - optimizer: ' + optimizer_list[idx] + '\n')
 
+    return optimizer_list[np.argmin(dev_loss_list)]
+
 def experiment_hidden_dimension():
-    hidden_dimension_list = range(10,100,10)
+    hidden_dimension_list = range(5,55,5)
     # define activation_format and optimizer
     epoch_loss_list = []
     dev_loss_list = []
@@ -479,30 +477,29 @@ def experiment_hidden_dimension():
         precision_list.append(precision)
         recall_list.append(recall)
         label.append(str(hidden_dimension) + " hidden dimensions")
-    
-    # Assign HIDDEN_DIMENSION to the optimizer with lowest dev error
-    HIDDEN_DIMENSION = hidden_dimension_list[np.argmin(dev_loss_list)]
-        
+
     # Plot loss function
-    Plot_images(epoch_loss_list, label, "Epoch", loss_function, loss_function + "_VaryingHiddenDim.png")
-    plot_dev_loss(hidden_dimension_list, dev_loss_list, "Number of Hidden Dimensions", loss_function, loss_function + "_VaryingHiddenDim_Dev.png")
-    
+    plot_images(epoch_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingHiddenDim.png")
+    plot_dev_loss(hidden_dimension_list, dev_loss_list, "Number of Hidden Dimensions", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingHiddenDim_Dev.png")
+
     # Plot Precision
     min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
-    plot_images(precision_list, label, "Epoch", "Precision", "Precision_VaryingOptimizers.png")
-    plot_dev_loss(hidden_dimension_list, min_precision_list, "Number of Hidden Dimensions", "Precision", "Precision_VaryingHiddenDim_Dev.png")
-    
+    plot_images(precision_list, label, "Epoch", "Precision", "results/Precision_VaryingHiddenDim.png")
+    plot_dev_loss(hidden_dimension_list, min_precision_list, "Number of Hidden Dimensions", "Precision", "results/Precision_VaryingHiddenDim_Dev.png")
+
     # Plot Recall
     min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
-    plot_images(recall_list, label, "Epoch", "Recall", "Recall_VaryingOptimizers.png")
-    plot_dev_loss(hidden_dimension_list, min_recall_list, "Number of Hidden Dimensions", "Recall", "Recall_VaryingHiddenDim_Dev.png")
+    plot_images(recall_list, label, "Epoch", "Recall", "results/Recall_VaryingHiddenDim.png")
+    plot_dev_loss(hidden_dimension_list, min_recall_list, "Number of Hidden Dimensions", "Recall", "results/Recall_VaryingHiddenDim_Dev.png")
+
+    return hidden_dimension_list[np.argmin(dev_loss_list)]
 
 def experiment_stack_number():
     return 0
 
 def experiment_learning_rate():
     learning_rates = [i / 100.0 for i in range(1, 10)]
-    for loss_function in ['RMSE', 'precision', 'recall']: 
+    for loss_function in ['RMSE', 'precision', 'recall']:
         # define activation_format, optimizer, and hiddem dimensions
         plot_data = []
         labels = []
@@ -532,9 +529,9 @@ def experiment_loss_functions():
 
 
 def run_experiments():
-    experiment_activation_function()
-    experiment_optimizers()
-    experiment_hidden_dimension()
+    ACTIVATION_FORMAT = experiment_activation_function()
+    OPTIMIZER = experiment_optimizers()
+    HIDDEN_DIMENSION = experiment_hidden_dimension()
 #    experiment_stack_number()
 #    experiment_learning_rate()
 #    experiment_loss_functions()
