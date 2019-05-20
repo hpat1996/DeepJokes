@@ -44,8 +44,9 @@ WEIGHT_DECAY                = 0.0
 LOSS_FUNCTION               = 'MMSE'
 OPTIMIZER                   = 'Adam'
 NUM_ITERATIONS              = 100
-ACTIVATION_FORMAT            = [('Sigmoid',1), ('Tanh',4), ('ReLU', 1)]
-
+ACTIVATION_FORMAT           = [('Sigmoid',1), ('Tanh',4), ('ReLU', 1)]
+HIDDEN_DIMENSION            = 5
+    
 print("\n")
 print("Initializing...")
 
@@ -108,7 +109,7 @@ test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
 # The stacked auto encoder model
 # ACTIVATION_ORDER is a list of tuple: (type of activation function, number of iterations)
 class StackedAutoEncoder(nn.Module):
-    def __init__(self, input_dim = num_jokes, hidden_dim = 5, output_dim = num_jokes, activation_format = ACTIVATION_FORMAT):
+    def __init__(self, input_dim = num_jokes, hidden_dim = HIDDEN_DIMENSION, output_dim = num_jokes, activation_format = ACTIVATION_FORMAT):
         super(StackedAutoEncoder, self).__init__()
 
         self.format = activation_format
@@ -222,8 +223,10 @@ def getLoss(predicted, actual, loss_function='MMSE'):
         return RMSE_Loss(predicted, actual)
     elif (loss_function == 'MAE'):
         return MAE_Loss(predicted, actual)
-    elif (loss_function == 'PR'):
-        return Precision_Recall(predicted, actual)
+    elif (loss_function == 'precision'):
+        return Precision_Recall(predicted, actual)[0]
+    elif (loss_function == 'recall'):
+        return Precision_Recall(predicted, actual)[1]
 
 ####################################################################################################
 # TRAIN AND TEST
@@ -247,26 +250,23 @@ def test(model, loss_function):
 
     return test_loss
 
-def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=False, 
-          activation_format = ACTIVATION_FORMAT, optim_type = 'adam',  hidden_dim = 5):
+def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=False):
         # Training on train data
     stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
-    if optim_type == 'adagrad':
+    if OPTIMIZER.lower() == 'adagrad':
         optimizer = optim.Adagrad(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
-    elif optim_type == 'sgd':
+    elif OPTIMIZER.lower() == 'sgd':
         optimizer = optim.SGD(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay, momentum = 0.9)
-    elif optim_type == 'rmsprop':
+    elif OPTIMIZER.lower() == 'rmsprop':
         optimizer = optim.RMSprop(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay, momentum = 0.9)
     else: # Adam(default)
         optimizer = optim.Adam(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
-    
+
     print("Training...")
     # Train the model
     epoch_loss = []
     for i in range(num_iterations):
-        predicted_ratings = stackedAutoEncoder(train_data, 
-                                               hidden_dim = hidden_dim,
-                                               activation_format = activation_format)
+        predicted_ratings = stackedAutoEncoder(train_data)
 
         optimizer.zero_grad()
         loss = getLoss(predicted_ratings, train_data, loss_function)
@@ -352,9 +352,26 @@ def experiment_activation_function():
                [('LeakyReLU',1),    ('Tanh',4),         ('ReLU',1)      ],
                [('LeakyReLU',1),    ('ReLU',4),         ('Sigmoid',1)   ],
                [('LeakyReLU',1),    ('ReLU',4),         ('Tanh',1)      ]]
-    for loss_function in ['MMSE', 'RMSE', 'PR']:
+
+    for loss_function in ['RMSE', 'precision', 'recall']:
+        epoch_loss_list = []
+        dev_loss_list = []
         for fmt in formats:
-            (epoch_loss, dev_loss, test_loss) = train(learing_rate = , WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True, fmt, OPTIMIZER, 5)
+            ACTIVATION_FORMAT = fmt
+            print("Running on " + str(ACTIVATION_FORMAT))
+            (epoch_loss, dev_loss, test_loss) = train(LEARNING_RATE, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
+            epoch_loss_list.append(epoch_loss)
+            dev_loss_list.append(dev_loss)
+        sorted_idx = np.argsort(dev_loss_list)
+        plot_data = []
+        labels = []
+        for idx in sorted_idx[:10]:
+            plot_data.append(epoch_loss_list[idx])
+            labels.append(str(formats[idx]))
+        plot_images(plot_data, labels, "Epoch", loss_function, loss_function + "-VaryingActivationFuns.png")
+        with open(loss_function + '-VaryingActivationFuns.txt', 'w') as f:
+            for idx in sorted_idx:
+                f.write('dev_lost: ' + dev_loss_list[idx] + ' - format: ' + str(formats[idx]) + '\n')
 
 def experiment_learning_rate():
     learning_rates = [i / 100.0 for i in range(1, 10)]
@@ -393,8 +410,9 @@ def experiment_loss_functions():
 
 
 def run_experiments():
-    experiment_learning_rate()
-    experiment_loss_functions()
+    experiment_activation_function()
+#    experiment_learning_rate()
+#    experiment_loss_functions()
 
 ####################################################################################################
 # USER INTERACTION FOR TRAINING AND TESTING MODELS
