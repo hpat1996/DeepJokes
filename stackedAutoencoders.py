@@ -107,7 +107,7 @@ test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
 ####################################################################################################
 
 # The stacked auto encoder model
-# ACTIVATION_ORDER is a list of tuple: (type of activation function, number of iterations)
+# ACTIVATION_FORMAT is a list of tuple: (type of activation function, number of iterations)
 class StackedAutoEncoder(nn.Module):
     def __init__(self, input_dim = num_jokes, hidden_dim = HIDDEN_DIMENSION, output_dim = num_jokes, activation_format = ACTIVATION_FORMAT):
         super(StackedAutoEncoder, self).__init__()
@@ -135,7 +135,7 @@ class StackedAutoEncoder(nn.Module):
             nn.Linear(hidden_dim, output_dim)
         )
 
-    # Run forward as given in ACTIVATION_ORDER
+    # Run forward as given in ACTIVATION_FORMAT
     def forward(self, x):
         for fmt in self.format:
             for idx in range(fmt[1]):
@@ -470,13 +470,13 @@ def experiment_hidden_dimension():
     label = []
     for hidden_dimension in hidden_dimension_list:
         HIDDEN_DIMENSION = hidden_dimension
-        print("Running on " + HIDDEN_DIMENSION + " hidden dimensions")
+        print("Running on " + str(HIDDEN_DIMENSION) + " hidden dimensions")
         epoch_loss, dev_loss, test_loss, precision, recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
         epoch_loss_list.append(epoch_loss)
         dev_loss_list.append(dev_loss)
         precision_list.append(precision)
         recall_list.append(recall)
-        label.append(str(hidden_dimension) + " hidden dimensions")
+        label.append(str(hidden_dimension) + " hidden dim")
 
     # Plot loss function
     plot_images(epoch_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingHiddenDim.png")
@@ -495,22 +495,73 @@ def experiment_hidden_dimension():
     return hidden_dimension_list[np.argmin(dev_loss_list)]
 
 def experiment_stack_number():
-    return 0
+    stack_number_list = range(6,54,6)
+    epoch_loss_list = []
+    dev_loss_list = []
+    precision_list = []
+    recall_list = []
+    label = []
+    for stack_num in stack_number_list:
+        if len(ACTIVATION_FORMAT) is 1:
+            ACTIVATION_FORMAT[0] = (ACTIVATION_FORMAT[0][0], stack_num)
+        else:
+            ACTIVATION_FORMAT[1] = (ACTIVATION_FORMAT[1][0], stack_num-2)
+        print("Running on " + str(ACTIVATION_FORMAT) + " with " + str(stack_num+2) + " stacks")
+        epoch_loss, dev_loss, test_loss, precision, recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
+        epoch_loss_list.append(epoch_loss)
+        dev_loss_list.append(dev_loss)
+        precision_list.append(precision)
+        recall_list.append(recall)
+        label.append("Number of stacks: " + str(stack_num))
+
+    # Plot loss function
+    plot_images(epoch_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingStackNums.png")
+    plot_dev_loss(stack_number_list, dev_loss_list, "Number of Stacks", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingStackNums_Dev.png")
+
+    # Plot Precision
+    min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
+    plot_images(precision_list, label, "Epoch", "Precision", "results/Precision_VaryingStackNums.png")
+    plot_dev_loss(stack_number_list, min_precision_list, "Number of Stacks", "Precision", "results/Precision_VaryingStackNums_Dev.png")
+
+    # Plot Recall
+    min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
+    plot_images(recall_list, label, "Epoch", "Recall", "results/Recall_VaryingStackNums.png")
+    plot_dev_loss(stack_number_list, min_recall_list, "Number of Stacks", "Recall", "results/Recall_VaryingStackNums_Dev.png")
+
+    return stack_number_list[np.argmin(dev_loss_list)]
 
 def experiment_learning_rate():
     learning_rates = [i / 100.0 for i in range(1, 10)]
-    for loss_function in ['RMSE', 'precision', 'recall']:
-        # define activation_format, optimizer, and hiddem dimensions
-        plot_data = []
-        labels = []
-        dev_loss_list = []
-        for learning_rate in learning_rates:
-            (epoch_loss, dev_loss, test_loss) = train(LEARNING_RATE, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
-            plot_data.append(epoch_loss)
-            labels.append("Learning rate: " + str(learning_rate))
-            dev_loss_list.append(dev_loss)
-        plot_images(plot_data, labels, "Epoch", loss_function, loss_function + "_VaryingLearningRate.png")
-        plot_dev_loss(learning_rates, dev_loss_list, "Learning rate", loss_function, loss_function + "_VaryingLearningRateDev.png")
+    epoch_loss_list = []
+    dev_loss_list = []
+    precision_list = []
+    recall_list = []
+    label = []
+    for learning_rate in learning_rates:
+        print("Running on " + str(learning_rate) + " learning rate")
+        epoch_loss, dev_loss, test_loss, precision, recall = train(learning_rate, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
+        epoch_loss_list.append(epoch_loss)
+        dev_loss_list.append(dev_loss)
+        precision_list.append(precision)
+        recall_list.append(recall)
+        label.append("Learning rate: " + str(learning_rate))
+
+    # Plot loss function
+    plot_images(epoch_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingLearningRate.png")
+    plot_dev_loss(learning_rates, dev_loss_list, "Learning Rate", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingLearningRate_Dev.png")
+
+    # Plot Precision
+    min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
+    plot_images(precision_list, label, "Epoch", "Precision", "results/Precision_VaryingLearningRate.png")
+    plot_dev_loss(learning_rates, min_precision_list, "Learning Rate", "Precision", "results/Precision_VaryingLearningRate_Dev.png")
+
+    # Plot Recall
+    min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
+    plot_images(recall_list, label, "Epoch", "Recall", "results/Recall_VaryingLearningRate.png")
+    plot_dev_loss(learning_rates, min_recall_list, "Learning Rate", "Recall", "results/Recall_VaryingLearningRate_Dev.png")
+
+    return learning_rate[np.argmin(dev_loss_list)]
+
 
 def experiment_loss_functions():
     learning_rate = 0.01
@@ -532,8 +583,12 @@ def run_experiments():
     ACTIVATION_FORMAT = experiment_activation_function()
     OPTIMIZER = experiment_optimizers()
     HIDDEN_DIMENSION = experiment_hidden_dimension()
-#    experiment_stack_number()
-#    experiment_learning_rate()
+    stack_num = experiment_stack_number()
+    if len(ACTIVATION_FORMAT) == 1:
+        ACTIVATION_FORMAT[0] = (ACTIVATION_FORMAT[0][0], stack_num)
+    else:
+        ACTIVATION_FORMAT[1] = (ACTIVATION_FORMAT[1][0], stack_num-2)
+    learning_rate = experiment_learning_rate()
 #    experiment_loss_functions()
 
 ####################################################################################################
