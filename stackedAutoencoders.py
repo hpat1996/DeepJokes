@@ -347,7 +347,7 @@ def experiment_activation_function():
                [('Sigmoid',1),      ('ReLU',4),         ('LeakyReLU',1) ],
                [('Sigmoid',1),      ('LeakyReLU',4),    ('Tanh',1)      ],
                [('Sigmoid',1),      ('LeakyReLU',4),    ('ReLU',1)      ],
-               [('Tanh',1),         ('Sigmoid',4),      ('ReLU',1)]     ],
+               [('Tanh',1),         ('Sigmoid',4),      ('ReLU',1)      ],
                [('Tanh',1),         ('Sigmoid',4),      ('LeakyReLU',1) ],
                [('Tanh',1),         ('ReLU',4),         ('Sigmoid',1)   ],
                [('Tanh',1),         ('ReLU',4),         ('LeakyReLU',1) ],
