@@ -41,7 +41,7 @@ NUM_TRAIN                   = ((0.5, 0.3), 0.5)
 # Hyperparameters for the model
 LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
-LOSS_FUNCTION               = 'MMSE'
+LOSS_FUNCTION               = 'RMSE'
 OPTIMIZER                   = 'Adam'
 NUM_ITERATIONS              = 100
 ACTIVATION_FORMAT           = [('Sigmoid',1), ('Tanh',4), ('ReLU', 1)]
@@ -265,6 +265,9 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
     print("Training...")
     # Train the model
     epoch_loss = []
+    precisions = []
+    recalls    = []
+    
     for i in range(num_iterations):
         predicted_ratings = stackedAutoEncoder(train_data)
 
@@ -275,12 +278,16 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
         optimizer.step()
 
         epoch_loss.append((i + 1, loss.data.item()))
+        precisions.append((i + 1, precision))
+        recalls.append((i + 1, recall))
         print("Epoch #", (i + 1), ": Training loss: ", loss.data.item())
         print("Epoch #", (i + 1), ": Precision: ", precision)
         print("Epoch #", (i + 1), ": Recall: ", recall)
     print("Training finished.\n")
-
+    
     dev_loss = dev(stackedAutoEncoder, loss_function)
+    dev_precision = dev(stackedAutoEncoder, 'precision')
+    dev_recall = dev(stackedAutoEncoder, 'recall')
     test_loss = test(stackedAutoEncoder, loss_function)
 
     if (save_model):
@@ -288,7 +295,7 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
         torch.save(stackedAutoEncoder, "model")
         print("Saved model.")
 
-    return epoch_loss, dev_loss, test_loss
+    return epoch_loss, dev_loss, test_loss, precisions, dev_precision, recalls, dev_recall
 
 ####################################################################################################
 # EXPERIMENTATION
@@ -306,16 +313,24 @@ def plot_images(plot_data, labels, xlabel, ylabel, filename):
     plt.savefig(filename)
     plt.clf()
 
+def plot_dev_loss(hyper_param, dev_loss, xlabel, ylabel, filename):
+    plt.clf()
+    plt.plot(hyper_param, dev_loss)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.savefig(filename)
+    plt.clf()
+
 def experiment_activation_function():
     # Load a list of layer format
     # 4 of Type1: A - A - A - A - A - A
     # 12 of Type2: A - B - B - B - B - A
     # 24 Type3: A - B - B - B - B - C
     # 40 in total
-    formats = [[('Sigmoid',6)],
-               [('Tanh',6)],
-               [('ReLU',6)],
-               [('LeakyReLU',6)],
+    formats = [[('Sigmoid',6)                                           ],
+               [('Tanh',6)                                              ],
+               [('ReLU',6)                                              ],
+               [('LeakyReLU',6)                                         ],
                [('Sigmoid',1),      ('Tanh',4),         ('Sigmoid',1)   ],
                [('Sigmoid',1),      ('ReLU',4),         ('Sigmoid',1)   ],
                [('Sigmoid',1),      ('LeakyReLU',4),    ('Sigmoid',1)   ],
@@ -353,45 +368,108 @@ def experiment_activation_function():
                [('LeakyReLU',1),    ('ReLU',4),         ('Sigmoid',1)   ],
                [('LeakyReLU',1),    ('ReLU',4),         ('Tanh',1)      ]]
 
-    for loss_function in ['RMSE', 'precision', 'recall']:
+    epoch_loss_list = []
+    dev_loss_list = []
+    precision_list = []
+    dev_precision_list = []
+    recall_list = []
+    dev_recall_list = []
+    for fmt in formats:
+        ACTIVATION_FORMAT = fmt
+        print("Running on " + str(ACTIVATION_FORMAT))
+        epoch_loss, dev_loss, test_loss, precision, dev_precision, recall, dev_recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
+        epoch_loss_list.append(epoch_loss)
+        dev_loss_list.append(dev_loss)
+        precision_list.append(precision)
+        dev_precision_list.append(dev_precision)
+        recall_list.append(recall)
+        dev_recall_list.append(dev_recall)
+        
+    # Plot loss function
+    sorted_idx = np.argsort(dev_loss_list)
+    plot_data = []
+    labels = []
+    for idx in sorted_idx[:10]:
+        plot_data.append(epoch_loss_list[idx])
+        labels.append(str(formats[idx]))
+    plot_images(plot_data, labels, "Epoch", LOSS_FUNCTION, LOSS_FUNCTION + "_VaryingActivationFuns.png")
+    with open(LOSS_FUNCTION + '_VaryingActivationFuns.txt', 'w') as f:
+        for idx in sorted_idx:
+            f.write('dev_lost: ' + dev_loss_list[idx] + ' - format: ' + str(formats[idx]) + '\n')
+    
+    # Plot Precision
+    sorted_idx = np.argsort(dev_precision_list)
+    plot_data = []
+    labels = []
+    for idx in sorted_idx[:10]:
+        plot_data.append(precision_list[idx])
+        labels.append(str(formats[idx]))
+    plot_images(plot_data, labels, "Epoch", "Precision", "Precision_VaryingActivationFuns.png")
+    with open('Precision_VaryingActivationFuns.txt', 'w') as f:
+        for idx in sorted_idx:
+            f.write('dev_lost: ' + dev_precision_list[idx] + ' - format: ' + str(formats[idx]) + '\n')
+    
+    # Plot Recall
+    sorted_idx = np.argsort(dev_recall_list)
+    plot_data = []
+    labels = []
+    for idx in sorted_idx[:10]:
+        plot_data.append(recall_list[idx])
+        labels.append(str(formats[idx]))
+    plot_images(plot_data, labels, "Epoch", "Recall", "Recall_VaryingActivationFuns.png")
+    with open('Recall_VaryingActivationFuns.txt', 'w') as f:
+        for idx in sorted_idx:
+            f.write('dev_lost: ' + dev_recall_list[idx] + ' - format: ' + str(formats[idx]) + '\n')
+
+def experiment_optimizers():
+    optimizer_list = ['adagrad', 'sgd', 'rmsprop', 'adam']
+    for loss_function in ['RMSE', 'precision', 'recall']: 
         epoch_loss_list = []
         dev_loss_list = []
-        for fmt in formats:
-            ACTIVATION_FORMAT = fmt
-            print("Running on " + str(ACTIVATION_FORMAT))
-            (epoch_loss, dev_loss, test_loss) = train(LEARNING_RATE, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
+        # define ACTIVATION_FORMAT
+        for optimizer in optimizer_list:
+            OPTIMIZER = optimizer
+            print("Running on " + OPTIMIZER + " optimizer")
+            (epoch_loss, dev_loss, test_loss) = train(LEARNING_RATE, WEIGHT_DECAY, loss_function, NUM_ITERATIONS, False)
             epoch_loss_list.append(epoch_loss)
             dev_loss_list.append(dev_loss)
-        sorted_idx = np.argsort(dev_loss_list)
-        plot_data = []
-        labels = []
-        for idx in sorted_idx[:10]:
-            plot_data.append(epoch_loss_list[idx])
-            labels.append(str(formats[idx]))
-        plot_images(plot_data, labels, "Epoch", loss_function, loss_function + "-VaryingActivationFuns.png")
-        with open(loss_function + '-VaryingActivationFuns.txt', 'w') as f:
-            for idx in sorted_idx:
-                f.write('dev_lost: ' + dev_loss_list[idx] + ' - format: ' + str(formats[idx]) + '\n')
+        plot_images(epoch_loss_list, optimizer_list, "Epoch", loss_function, loss_function + "_VaryingOptimizers.png")
+        with open(loss_function + '_VaryingOptimizers.txt', 'w') as f:
+            for idx in range(optimizer_list):
+                f.write('dev_lost: ' + dev_loss_list[idx] + ' - optimizer: ' + optimizer_list[idx] + '\n')
+
+def experiment_hidden_layer():
+    hidden_dimension_list = [5, 10, 20, 35, 50, 75]
+    for loss_function in ['RMSE', 'precision', 'recall']: 
+        epoch_loss_list = []
+        dev_loss_list = []
+        # define activation_format and optimizer
+        for hidden_dimension in hidden_dimension_list:
+            HIDDEN_DIMENSION = hidden_dimension
+            print("Running on " + HIDDEN_DIMENSION + " hidden dimensions")
+            (epoch_loss, dev_loss, test_loss) = train(LEARNING_RATE, WEIGHT_DECAY, loss_function, NUM_ITERATIONS, False)
+            epoch_loss_list.append(epoch_loss)
+            dev_loss_list.append(dev_loss)
+        plot_images(epoch_loss_list, optimizer_list, "Epoch", loss_function, loss_function + "_VaryingHiddenDim.png")
+        plot_dev_loss(hidden_dimension_list, dev_loss_list, "Number of Hidden Dimensions", loss_function, loss_function + "_VaryingHiddenDim_Dev.png")
+
+def experiment_stack_number():
+    return 0
 
 def experiment_learning_rate():
     learning_rates = [i / 100.0 for i in range(1, 10)]
-
-    plot_data = []
-    labels = []
-    for learning_rate in learning_rates:
-        epoch_loss, _, _ = train(LEARNING_RATE, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
-        plot_data.append(epoch_loss[10:])
-        labels.append("Learning rate: " + str(learning_rate))
-    plot_images(plot_data, labels, "Epoch", "Masked Mean squared error", "VaryingLearningRate_MMSE.png")
-
-    plot_data = []
-    labels = []
-    for learning_rate in learning_rates:
-        epoch_loss, _, _ = train(learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, True)
-        plot_data.append(epoch_loss[10:])
-        labels.append("Learning rate: " + str(learning_rate))
-    plot_images(plot_data, labels, "Epoch", "Root Mean squared error", "VaryingLearningRate_RMSE.png")
-
+    for loss_function in ['RMSE', 'precision', 'recall']: 
+        # define activation_format, optimizer, and hiddem dimensions
+        plot_data = []
+        labels = []
+        dev_loss_list = []
+        for learning_rate in learning_rates:
+            (epoch_loss, dev_loss, test_loss) = train(LEARNING_RATE, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
+            plot_data.append(epoch_loss)
+            labels.append("Learning rate: " + str(learning_rate))
+            dev_loss_list.append(dev_loss)
+        plot_images(plot_data, labels, "Epoch", loss_function, loss_function + "_VaryingLearningRate.png")
+        plot_dev_loss(learning_rates, dev_loss_list, "Learning rate", loss_function, loss_function + "_VaryingLearningRateDev.png")
 
 def experiment_loss_functions():
     learning_rate = 0.01
@@ -411,6 +489,9 @@ def experiment_loss_functions():
 
 def run_experiments():
     experiment_activation_function()
+#    experiment_optimizers()
+#    experiment_hidden_layer()
+#    experiment_stack_number()
 #    experiment_learning_rate()
 #    experiment_loss_functions()
 
@@ -422,7 +503,7 @@ mode = sys.argv[1]
 
 if (mode == 'train'):
     # Training on train data
-    train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, True, ACTIVATION_FORMAT, OPTIMIZER, 5)
+    train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, True)
 
 elif (mode == 'test'):
     # Testing on test data
