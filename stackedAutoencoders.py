@@ -347,7 +347,7 @@ def experiment_activation_function():
                [('Sigmoid',1),      ('ReLU',4),         ('LeakyReLU',1) ],
                [('Sigmoid',1),      ('LeakyReLU',4),    ('Tanh',1)      ],
                [('Sigmoid',1),      ('LeakyReLU',4),    ('ReLU',1)      ],
-               [('Tanh',1),         ('Sigmoid',4),      ('ReLU',1)]     ,
+               [('Tanh',1),         ('Sigmoid',4),      ('ReLU',1)]     ],
                [('Tanh',1),         ('Sigmoid',4),      ('LeakyReLU',1) ],
                [('Tanh',1),         ('ReLU',4),         ('Sigmoid',1)   ],
                [('Tanh',1),         ('ReLU',4),         ('LeakyReLU',1) ],
@@ -584,7 +584,7 @@ def run_experiments():
     OPTIMIZER = experiment_optimizers()
     HIDDEN_DIMENSION = experiment_hidden_dimension()
     stack_num = experiment_stack_number()
-    if len(ACTIVATION_FORMAT) == 1:
+    if len(ACTIVATION_FORMAT) is 1:
         ACTIVATION_FORMAT[0] = (ACTIVATION_FORMAT[0][0], stack_num)
     else:
         ACTIVATION_FORMAT[1] = (ACTIVATION_FORMAT[1][0], stack_num-2)
