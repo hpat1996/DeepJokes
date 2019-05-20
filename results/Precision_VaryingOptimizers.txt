@@ -1,0 +1,4 @@
+dev_lost: 0.7693097973288587 - optimizer: adam
+dev_lost: 0.8264379778249151 - optimizer: sgd
+dev_lost: 0.8348356882680265 - optimizer: rmsprop
+dev_lost: 1.0 - optimizer: adagrad
