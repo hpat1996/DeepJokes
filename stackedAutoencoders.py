@@ -153,9 +153,9 @@ def Precision_Recall(predicted, actual):
     precision = 0.0
     recall = 0.0
     for i in range(0, actual_cloned.shape[0]):
-        relevant_items = set(filter(lambda j : actual_cloned[i][j] >= 3.0, np.arange(0, actual_cloned.shape[1])))
+        relevant_items = set(filter(lambda j : actual_cloned[i][j] >= 3.0 and actual_cloned[i][j] != NORMALIZED_UNKNOWN_RATING, np.arange(0, actual_cloned.shape[1])))
         top_k_rec = np.argsort(-predicted_cloned[i])[:10]
-        top_k_rec_filtered = set(filter(lambda j : predicted_cloned[i][j] >= 3.0,  top_k_rec))
+        top_k_rec_filtered = set(filter(lambda j : predicted_cloned[i][j] >= 3.0 and actual_cloned[i][j] != NORMALIZED_UNKNOWN_RATING,  top_k_rec))
         length1 = len(top_k_rec_filtered)
         length2 = len(relevant_items)
         val = len(relevant_items.intersection(top_k_rec_filtered))
