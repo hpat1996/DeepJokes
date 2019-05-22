@@ -155,11 +155,32 @@ class StackedAutoEncoder(nn.Module):
 # LOSS FUNCTIONS
 ####################################################################################################
 
+def Precision_Recall_TopK(predicted, actual, K = 10):
+    n = actual.size()[0]
+    mask_actual = (actual    != NORMALIZED_UNKNOWN_RATING) * (actual     >= (0.6 * NORMALIZED_MAX_RATING))
+    mask_pred   = (predicted != NORMALIZED_UNKNOWN_RATING) * (predicted  >= (0.6 * NORMALIZED_MAX_RATING))
+
+    actual      = actual    * mask_actual.float()
+    predicted   = predicted * mask_pred.float()
+
+    precision   = 0
+    recall      = 0
+    for i in range(n):
+        topK_actual = set(map(lambda x: x[0], sorted(filter(lambda x: x[1] != 0, enumerate(actual[i].detach().numpy())),    key=lambda x: x[1], reverse=True)[:K]))
+        topK_pred   = set(map(lambda x: x[0], sorted(filter(lambda x: x[1] != 0, enumerate(predicted[i].detach().numpy())), key=lambda x: x[1], reverse=True)[:K]))
+    
+        num_common  = len(topK_actual.intersection(topK_pred))
+        precision   += num_common / len(topK_pred)      if len(topK_pred)   != 0    else 0
+        recall      += num_common / len(topK_actual)    if len(topK_actual) != 0    else 0
+
+    return ((precision / n), (recall / n))
+
+
 # MMSE Loss function
 def MMSE_Loss(predicted, actual):
     # Get the mask
     mask        = actual != NORMALIZED_UNKNOWN_RATING
-    mask        = mask.float()
+    mask        = mask.float()  
 
     # Mask the columns in the output where the input is unrated
     actual      = actual    * mask
@@ -195,7 +216,8 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
 
     print("Training...")
     # Train the model
-    epoch_loss = []
+    epoch_train_loss = []
+    epoch_dev_loss = []
     for i in range(num_iterations):
         predicted_ratings = stackedAutoEncoder(train_data)
 
@@ -204,27 +226,32 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
         loss.backward()
         optimizer.step()
 
-        epoch_loss.append((i + 1, loss.data.item()))
+        epoch_train_loss.append((i + 1, loss.data.item()))
+        epoch_dev_loss.append(dev(stackedAutoEncoder, loss_function))
+
         print("Epoch #", (i + 1), ": Training loss: ", loss.data.item())
 
     print("Training finished.\n")
 
-    dev_loss = dev(stackedAutoEncoder, loss_function)
+    precision_train, recall_train = Precision_Recall_TopK(stackedAutoEncoder(train_data), train_data)
+    precision_dev, recall_dev = Precision_Recall_TopK(stackedAutoEncoder(dev_data), dev_data)
+
+    print("Precision of train data: " + str(precision_train))
+    print("Recall on train data: " + str(recall_train))
+
+    print("Precision of dev data: " + str(precision_dev))
+    print("Recall on dev data: " + str(recall_dev))
 
     if (save_model):
         print("Saving model...")
         torch.save(stackedAutoEncoder, "model")
         print("Saved model.")
     
-    return epoch_loss, dev_loss
+    return epoch_train_loss, epoch_dev_loss
 
 def dev(model, loss_function):
-    print("Evaluating...")
     predicted_ratings = model(dev_data)
     dev_loss = getLoss(predicted_ratings, dev_data, loss_function).data.item()
-    print("Loss on dev data: ", dev_loss)
-    print("\n")
-
     return dev_loss
 
 def test(model, loss_function):
@@ -232,6 +259,11 @@ def test(model, loss_function):
     predicted_ratings = model(test_data)
     test_loss = getLoss(predicted_ratings, test_data, loss_function).data.item()
     print("Loss on test data: ", test_loss)
+
+    precision_test, recall_test = Precision_Recall_TopK(stackedAutoEncoder(test_data), test_data)
+    print("Precision of test data: " + str(precision_test))
+    print("Recall on test data: " + str(recall_test))
+
     print("\n")
 
     return test_loss
@@ -259,16 +291,16 @@ def experiment_learning_rate():
     plot_data = []
     labels = []
     for learning_rate in learning_rates:
-        epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
-        plot_data.append(epoch_loss[10:])
+        epoch_train_loss, epoch_dev_loss = train(learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
+        plot_data.append(epoch_train_loss[10:])
         labels.append("Learning rate: " + str(learning_rate))
     plot_images(plot_data, labels, "Epoch", "Masked Mean squared error", "VaryingLearningRate_MMSE.png")
 
     plot_data = []
     labels = []
     for learning_rate in learning_rates:
-        epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, True)
-        plot_data.append(epoch_loss[10:])
+        epoch_train_loss, epoch_dev_loss = train(learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, True)
+        plot_data.append(epoch_train_loss[10:])
         labels.append("Learning rate: " + str(learning_rate))
     plot_images(plot_data, labels, "Epoch", "Root Mean squared error", "VaryingLearningRate_RMSE.png")
 
@@ -278,12 +310,12 @@ def experiment_loss_functions():
     plot_data = []
     labels = []
 
-    epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
-    plot_data.append(epoch_loss[10:])
+    epoch_train_loss, epoch_dev_loss = train(learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, True)
+    plot_data.append(epoch_train_loss[10:])
     labels.append("MMSE")
 
-    epoch_loss, _ = train(learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, True)
-    plot_data.append(epoch_loss[10:])
+    epoch_train_loss, epoch_dev_loss = train(learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, True)
+    plot_data.append(epoch_train_loss[10:])
     labels.append("RMSE")
 
     plot_images(plot_data, labels, "Epoch", "Error", "VaryingLossFunction.png")
