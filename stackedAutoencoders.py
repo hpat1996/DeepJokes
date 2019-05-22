@@ -35,17 +35,20 @@ NORMALIZED_MIN_RATING       = 1
 NORMALIZED_MAX_RATING       = 5
 NORMALIZED_ROUNDED          = True
 
-                            # (% users(%train, %dev), % jokes (%train))
-NUM_TRAIN                   = ((0.5, 0.3), 0.5)
+NUM_DEV_TEST_USERS          = 0.5
+NUM_DEV_JOKES               = 0.3
+NUM_TEST_JOKES              = 0.2
+NUM_DEV_TEST_JOKES          = NUM_DEV_JOKES + NUM_TEST_JOKES
 
 # Hyperparameters for the model
 LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
-LOSS_FUNCTION               = 'RMSE'
+LOSS_FUNCTION               = 'MMSE'
 OPTIMIZER                   = 'Adam'
 NUM_ITERATIONS              = 50
-ACTIVATION_FORMAT           = [('Sigmoid',1), ('Tanh',4), ('ReLU', 1)]
+ACTIVATION_FUNCTION         = 'Tanh'
 HIDDEN_DIMENSION            = 5
+STACK_NUMBER                = 6
 
 print("\n")
 print("Initializing...")
@@ -64,7 +67,7 @@ def normalizeData(n):
     dataset_range       = (DATASET_MAX_RATING    -  DATASET_MIN_RATING)
     normalized_range    = (NORMALIZED_MAX_RATING -  NORMALIZED_MIN_RATING)
 
-    normalized_n = (((n - DATASET_MIN_RATING) * normalized_range) / dataset_range) + NORMALIZED_MIN_RATING
+    normalized_n        = (((n - DATASET_MIN_RATING) * normalized_range) / dataset_range) + NORMALIZED_MIN_RATING
 
     if NORMALIZED_ROUNDED:
         normalized_n = round(normalized_n)
@@ -80,26 +83,27 @@ data = np.vectorize(normalizeData)(data)
 np.random.shuffle(data)
 num_users, num_jokes = data.shape
 
-# Divide the data into train and test
-num_train_users   = int(NUM_TRAIN[0][0] * num_users)
-num_dev_users     = int((NUM_TRAIN[0][0] + NUM_TRAIN[0][1]) * num_users)
-num_train_jokes   = int(NUM_TRAIN[1] * num_jokes)
+# Divide the data into train, dev and test
+train_data  = np.copy(data)
 
-train_data  = np.zeros(shape=data.shape)
-train_data.fill(NORMALIZED_UNKNOWN_RATING)
 dev_data    = np.zeros(shape=data.shape)
 dev_data.fill(NORMALIZED_UNKNOWN_RATING)
+
 test_data   = np.zeros(shape=data.shape)
 test_data.fill(NORMALIZED_UNKNOWN_RATING)
 
-train_data  [               :               ,                       :num_train_jokes]   = data[               :               ,                       :num_train_jokes]
-train_data  [               :num_train_users,                       :               ]   = data[               :num_train_users,                       :               ]
-dev_data    [num_train_users:num_dev_users  ,   num_train_jokes     :               ]   = data[num_train_users:num_dev_users  ,   num_train_jokes     :               ]
-test_data   [num_dev_users  :               ,   num_train_jokes     :               ]   = data[num_dev_users  :               ,   num_train_jokes     :               ]
+num_dev_test_users  = int(NUM_DEV_TEST_USERS    * num_users)
+num_dev_jokes       = int(NUM_DEV_JOKES         * num_jokes)
+num_test_jokes      = int(NUM_TEST_JOKES        * num_jokes)
+num_dev_test_jokes  = int(NUM_DEV_TEST_JOKES    * num_jokes)
+
+train_data  [num_dev_test_users : , num_dev_test_jokes  :               ]   = NORMALIZED_UNKNOWN_RATING
+dev_data    [num_dev_test_users : , -num_dev_test_jokes : -num_dev_jokes]   = data[num_dev_test_users : , -num_dev_test_jokes   : -num_dev_jokes]
+test_data   [num_dev_test_users : , -num_dev_jokes      :               ]   = data[num_dev_test_users : , -num_dev_jokes        :               ]
 
 
 train_data  = torch.tensor(train_data,  device = DEVICE, dtype=torch.float)
-dev_data    = torch.tensor(dev_data,  device = DEVICE, dtype=torch.float)
+dev_data    = torch.tensor(dev_data,    device = DEVICE, dtype=torch.float)
 test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
 
 ####################################################################################################
@@ -107,52 +111,117 @@ test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
 ####################################################################################################
 
 # The stacked auto encoder model
-# ACTIVATION_FORMAT is a list of tuple: (type of activation function, number of iterations)
 class StackedAutoEncoder(nn.Module):
-    def __init__(self, input_dim = num_jokes, hidden_dim = HIDDEN_DIMENSION, output_dim = num_jokes, activation_format = ACTIVATION_FORMAT):
+    def __init__(self, input_dim = num_jokes, hidden_dim = 5, output_dim = num_jokes):
         super(StackedAutoEncoder, self).__init__()
 
-        self.format = activation_format
-
-        self.Sigmoid = nn.Sequential(
+        ae_sigmoid = [
             nn.Linear(input_dim, hidden_dim),
             nn.Sigmoid(),
             nn.Linear(hidden_dim, output_dim)
-        )
-        self.Tanh = nn.Sequential(
+        ]
+
+        ae_tanh = [
             nn.Linear(input_dim, hidden_dim),
             nn.Tanh(),
             nn.Linear(hidden_dim, output_dim)
-        )
-        self.ReLU = nn.Sequential(
+        ]
+
+        ae_relu = [
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, output_dim)
-        )
-        self.LeakyReLU = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.LeakyReLU(),
-            nn.Linear(hidden_dim, output_dim)
-        )
+        ]
 
-    # Run forward as given in ACTIVATION_FORMAT
+        if ACTIVATION_FUNCTION.lower() is 'sigmoid':
+            ae_seq = ae_sigmoid
+        elif ACTIVATION_FUNCTION.lower() is 'relu':
+            ae_seq = ae_relu
+        else:
+            ae_seq = ae_tanh
+
+        if STACK_NUMBER > 0:
+            self.ae01 = nn.Sequential(*ae_seq)
+            self.ae02 = nn.Sequential(*ae_seq)
+            self.ae03 = nn.Sequential(*ae_seq)
+
+        if STACK_NUMBER > 3:
+            self.ae04 = nn.Sequential(*ae_seq)
+            self.ae05 = nn.Sequential(*ae_seq)
+            self.ae06 = nn.Sequential(*ae_seq)
+
+        if STACK_NUMBER > 6:
+            self.ae07 = nn.Sequential(*ae_seq)
+            self.ae08 = nn.Sequential(*ae_seq)
+            self.ae09 = nn.Sequential(*ae_seq)
+
+        if STACK_NUMBER > 9:
+            self.ae10 = nn.Sequential(*ae_seq)
+            self.ae11 = nn.Sequential(*ae_seq)
+            self.ae12 = nn.Sequential(*ae_seq)
+
+        if STACK_NUMBER > 12:
+            self.ae13 = nn.Sequential(*ae_seq)
+            self.ae14 = nn.Sequential(*ae_seq)
+            self.ae15 = nn.Sequential(*ae_seq)
+
     def forward(self, x):
-        for fmt in self.format:
-            for idx in range(fmt[1]):
-                if fmt[0].lower() == 'sigmoid':
-                    x = self.Sigmoid(x)
-                elif fmt[0].lower() == 'tanh':
-                    x = self.Tanh(x)
-                elif fmt[0].lower() == 'relu':
-                    x = self.ReLU(x)
-                elif fmt[0].lower() == 'leakyrelu':
-                    x = self.LeakyReLU(x)
+        if STACK_NUMBER > 0:
+            x = self.ae01(x)
+            x = self.ae02(x)
+            x = self.ae03(x)
+
+        if STACK_NUMBER > 3:
+            x = self.ae04(x)
+            x = self.ae05(x)
+            x = self.ae06(x)
+
+        if STACK_NUMBER > 6:
+            x = self.ae07(x)
+            x = self.ae08(x)
+            x = self.ae09(x)
+
+        if STACK_NUMBER > 9:
+            x = self.ae10(x)
+            x = self.ae11(x)
+            x = self.ae12(x)
+
+        if STACK_NUMBER > 12:
+            x = self.ae13(x)
+            x = self.ae14(x)
+            x = self.ae15(x)
 
         return x
 
 ####################################################################################################
 # LOSS FUNCTIONS
 ####################################################################################################
+
+def Precision_Recall_TopK(predicted, actual, K = 10):
+    actual      = actual.cpu().detach().numpy()
+    predicted   = predicted.cpu().detach().numpy()
+
+    n, d        = actual.shape
+
+    mask_actual = (actual    != NORMALIZED_UNKNOWN_RATING) * (actual     >= (0.6 * NORMALIZED_MAX_RATING))
+    mask_pred   = (actual    != NORMALIZED_UNKNOWN_RATING) * (predicted  >= (0.6 * NORMALIZED_MAX_RATING))
+
+    actual      = actual    * mask_actual
+    predicted   = predicted * mask_pred
+
+    precision   = 0
+    recall      = 0
+    for i in range(n):
+        relevant_items  = set(filter(lambda item: actual[i][item] != 0, range(d)))
+        topK_pred       = np.argsort(-predicted[i])[:K]
+        topK_pred       = set(filter(lambda item: predicted[i][item] != 0, topK_pred))
+
+        num_common  = len(relevant_items.intersection(topK_pred))
+        precision   += num_common / len(topK_pred)      if len(topK_pred)       != 0    else 1
+        recall      += num_common / len(relevant_items) if len(relevant_items)  != 0    else 1
+
+    return ((precision / n), (recall / n))
+
 
 # MMSE Loss function
 def MMSE_Loss(predicted, actual):
@@ -176,69 +245,60 @@ def RMSE_Loss(predicted, actual):
     error, num_ratings = MMSE_Loss(predicted, actual)
     return (error / num_ratings) ** 0.5
 
-# MAE (Mean Absolute Error) Loss Function
-def MAE_Loss(predicted, actual):
-    # Get the mask
-    mask        = actual != NORMALIZED_UNKNOWN_RATING
-    mask        = mask.float()
-
-    # Mask the columns in the output where the input is unrated
-    actual      = actual    * mask
-    predicted   = predicted * mask
-
-    # Total number of ratings
-    num_ratings = torch.sum(mask)
-
-    # Calculate the square of the errors
-    error       = torch.sum(torch.abs(actual - predicted))
-    return error, num_ratings
-
-def Precision_Recall(predicted, actual):
-    actual_cloned = actual.detach().numpy()
-    predicted_cloned = predicted.detach().numpy()
-    precision = 0.0
-    recall = 0.0
-    for i in range(0, actual_cloned.shape[0]):
-        relevant_items = set(filter(lambda j : actual_cloned[i][j] >= 3.0, np.arange(0, actual_cloned.shape[1])))
-        top_k_rec = np.argsort(-predicted_cloned[i])[:10]
-        top_k_rec_filtered = set(filter(lambda j : predicted_cloned[i][j] >= 3.0,  top_k_rec))
-        length1 = len(top_k_rec_filtered)
-        length2 = len(relevant_items)
-        val = len(relevant_items.intersection(top_k_rec_filtered))
-        if length1 == 0:
-            precision += 1
-        else:
-            precision += val/float(length1)
-        if length2 == 0:
-            recall += 1
-        else:
-            recall += val/float(length2)
-    return ((precision/actual_cloned.shape[0], recall/actual_cloned.shape[0]))
-
 def getLoss(predicted, actual, loss_function='MMSE'):
     if (loss_function == 'MMSE'):
         error, num_ratings = MMSE_Loss(predicted, actual)
         return error / num_ratings
     elif (loss_function == 'RMSE'):
         return RMSE_Loss(predicted, actual)
-    elif (loss_function == 'MAE'):
-        return MAE_Loss(predicted, actual)
-    elif (loss_function == 'precision'):
-        return Precision_Recall(predicted, actual)[0]
-    elif (loss_function == 'recall'):
-        return Precision_Recall(predicted, actual)[1]
 
 ####################################################################################################
-# TRAIN, DEV, AND TEST
+# TRAIN AND TEST
 ####################################################################################################
+
+def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=False):
+        # Training on train data
+    stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
+    optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
+
+    print("Training...")
+    # Train the model
+    epoch_train_loss = []
+    epoch_dev_loss = []
+    for i in range(num_iterations):
+        predicted_ratings = stackedAutoEncoder(train_data)
+
+        optimizer.zero_grad()
+        loss = getLoss(predicted_ratings, train_data, loss_function)
+        loss.backward()
+        optimizer.step()
+
+        epoch_train_loss.append((i + 1, loss.data.item()))
+        epoch_dev_loss.append(dev(stackedAutoEncoder, loss_function))
+
+        print("Epoch #", (i + 1), ": Training loss: ", loss.data.item())
+
+    print("Training finished.\n")
+
+    precision_train, recall_train = Precision_Recall_TopK(stackedAutoEncoder(train_data), train_data)
+    precision_dev, recall_dev = Precision_Recall_TopK(stackedAutoEncoder(dev_data), dev_data)
+
+    print("Precision of train data: " + str(precision_train))
+    print("Recall on train data: " + str(recall_train))
+
+    print("Precision of dev data: " + str(precision_dev))
+    print("Recall on dev data: " + str(recall_dev))
+
+    if (save_model):
+        print("Saving model...")
+        torch.save(stackedAutoEncoder, "model")
+        print("Saved model.")
+
+    return epoch_train_loss, epoch_dev_loss
 
 def dev(model, loss_function):
-    print("Validating...")
     predicted_ratings = model(dev_data)
     dev_loss = getLoss(predicted_ratings, dev_data, loss_function).data.item()
-    print("Loss on dev data: ", dev_loss)
-    print("\n")
-
     return dev_loss
 
 def test(model, loss_function):
@@ -246,54 +306,14 @@ def test(model, loss_function):
     predicted_ratings = model(test_data)
     test_loss = getLoss(predicted_ratings, test_data, loss_function).data.item()
     print("Loss on test data: ", test_loss)
+
+    precision_test, recall_test = Precision_Recall_TopK(stackedAutoEncoder(test_data), test_data)
+    print("Precision of test data: " + str(precision_test))
+    print("Recall on test data: " + str(recall_test))
+
     print("\n")
 
     return test_loss
-
-def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=False):
-        # Training on train data
-    stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
-    if OPTIMIZER.lower() == 'adagrad':
-        optimizer = optim.Adagrad(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
-    elif OPTIMIZER.lower() == 'sgd':
-        optimizer = optim.SGD(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay, momentum = 0.9)
-    elif OPTIMIZER.lower() == 'rmsprop':
-        optimizer = optim.RMSprop(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay, momentum = 0.9)
-    else: # Adam(default)
-        optimizer = optim.Adam(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
-
-    print("Training...")
-    # Train the model
-    epoch_loss = []
-    precisions = []
-    recalls    = []
-
-    for i in range(num_iterations):
-        predicted_ratings = stackedAutoEncoder(train_data)
-
-        optimizer.zero_grad()
-        loss = getLoss(predicted_ratings, train_data, loss_function)
-        precision, recall = Precision_Recall(predicted_ratings, train_data)
-        loss.backward()
-        optimizer.step()
-
-        epoch_loss.append((i + 1, loss.data.item()))
-        precisions.append((i + 1, precision))
-        recalls.append((i + 1, recall))
-        print("Epoch #", (i + 1), ": Training loss: ", loss.data.item())
-        print("Epoch #", (i + 1), ": Precision: ", precision)
-        print("Epoch #", (i + 1), ": Recall: ", recall)
-    print("Training finished.\n")
-
-    dev_loss = dev(stackedAutoEncoder, loss_function)
-    test_loss = test(stackedAutoEncoder, loss_function)
-
-    if (save_model):
-        print("Saving model...")
-        torch.save(stackedAutoEncoder, "model")
-        print("Saved model.")
-
-    return epoch_loss, dev_loss, test_loss, precisions, recalls
 
 ####################################################################################################
 # EXPERIMENTATION
@@ -371,8 +391,8 @@ def experiment_activation_function():
     precision_list = []
     recall_list = []
     for fmt in formats:
-        ACTIVATION_FORMAT = fmt
-        print("Running on " + str(ACTIVATION_FORMAT))
+        ACTIVATION_SEQUENCE = fmt
+        print("Running on " + str(ACTIVATION_SEQUENCE))
         epoch_loss, dev_loss, test_loss, precision, recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
         epoch_loss_list.append(epoch_loss)
         dev_loss_list.append(dev_loss)
@@ -425,7 +445,7 @@ def experiment_optimizers():
     dev_loss_list = []
     precision_list = []
     recall_list = []
-    # define ACTIVATION_FORMAT
+    # define ACTIVATION_SEQUENCE
     for optimizer in optimizer_list:
         OPTIMIZER = optimizer
         print("Running on " + OPTIMIZER + " optimizer")
@@ -462,7 +482,7 @@ def experiment_optimizers():
 
 def experiment_hidden_dimension():
     hidden_dimension_list = range(5,55,5)
-    # define activation_format and optimizer
+    # define ACTIVATION_SEQUENCE and optimizer
     epoch_loss_list = []
     dev_loss_list = []
     precision_list = []
@@ -502,11 +522,11 @@ def experiment_stack_number():
     recall_list = []
     label = []
     for stack_num in stack_number_list:
-        if len(ACTIVATION_FORMAT) is 1:
-            ACTIVATION_FORMAT[0] = (ACTIVATION_FORMAT[0][0], stack_num)
+        if len(ACTIVATION_SEQUENCE) is 1:
+            ACTIVATION_SEQUENCE[0] = (ACTIVATION_SEQUENCE[0][0], stack_num)
         else:
-            ACTIVATION_FORMAT[1] = (ACTIVATION_FORMAT[1][0], stack_num-2)
-        print("Running on " + str(ACTIVATION_FORMAT) + " with " + str(stack_num) + " stacks")
+            ACTIVATION_SEQUENCE[1] = (ACTIVATION_SEQUENCE[1][0], stack_num-2)
+        print("Running on " + str(ACTIVATION_SEQUENCE) + " with " + str(stack_num) + " stacks")
         epoch_loss, dev_loss, test_loss, precision, recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
         epoch_loss_list.append(epoch_loss)
         dev_loss_list.append(dev_loss)
@@ -580,17 +600,17 @@ def experiment_loss_functions():
 
 
 def run_experiments():
-    ACTIVATION_FORMAT = experiment_activation_function()
-    # ACTIVATION_FORMAT = [('ReLU', 1), ('Sigmoid', 4), ('Tanh', 1)]
+    ACTIVATION_SEQUENCE = experiment_activation_function()
+    # ACTIVATION_SEQUENCE = [('ReLU', 1), ('Sigmoid', 4), ('Tanh', 1)]
     OPTIMIZER = experiment_optimizers()
     # OPTIMIZER = 'sgd'
     HIDDEN_DIMENSION = experiment_hidden_dimension()
     # HIDDEN_DIMENSION = 5
     stack_num = experiment_stack_number()
-    # if len(ACTIVATION_FORMAT) is 1:
-    #     ACTIVATION_FORMAT[0] = (ACTIVATION_FORMAT[0][0], stack_num)
+    # if len(ACTIVATION_SEQUENCE) is 1:
+    #     ACTIVATION_SEQUENCE[0] = (ACTIVATION_SEQUENCE[0][0], stack_num)
     # else:
-    #     ACTIVATION_FORMAT[1] = (ACTIVATION_FORMAT[1][0], stack_num-2)
+    #     ACTIVATION_SEQUENCE[1] = (ACTIVATION_SEQUENCE[1][0], stack_num-2)
     learning_rate = experiment_learning_rate()
 #    experiment_loss_functions()
 
