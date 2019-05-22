@@ -158,7 +158,7 @@ class StackedAutoEncoder(nn.Module):
 def Precision_Recall_TopK(predicted, actual, K = 10):
     n = actual.size()[0]
     mask_actual = (actual    != NORMALIZED_UNKNOWN_RATING) * (actual     >= (0.6 * NORMALIZED_MAX_RATING))
-    mask_pred   = (predicted != NORMALIZED_UNKNOWN_RATING) * (predicted  >= (0.6 * NORMALIZED_MAX_RATING))
+    mask_pred   = (actual    != NORMALIZED_UNKNOWN_RATING) * (predicted  >= (0.6 * NORMALIZED_MAX_RATING))
 
     actual      = actual    * mask_actual.float()
     predicted   = predicted * mask_pred.float()
@@ -166,12 +166,12 @@ def Precision_Recall_TopK(predicted, actual, K = 10):
     precision   = 0
     recall      = 0
     for i in range(n):
-        topK_actual = set(map(lambda x: x[0], sorted(filter(lambda x: x[1] != 0, enumerate(actual[i].detach().numpy())),    key=lambda x: x[1], reverse=True)[:K]))
+        top_actual = set(map(lambda x: x[0], filter(lambda x: x[1] != 0, enumerate(actual[i].detach().numpy()))))
         topK_pred   = set(map(lambda x: x[0], sorted(filter(lambda x: x[1] != 0, enumerate(predicted[i].detach().numpy())), key=lambda x: x[1], reverse=True)[:K]))
     
-        num_common  = len(topK_actual.intersection(topK_pred))
+        num_common  = len(top_actual.intersection(topK_pred))
         precision   += num_common / len(topK_pred)      if len(topK_pred)   != 0    else 0
-        recall      += num_common / len(topK_actual)    if len(topK_actual) != 0    else 0
+        recall      += num_common / len(top_actual)     if len(top_actual)  != 0    else 0
 
     return ((precision / n), (recall / n))
 
