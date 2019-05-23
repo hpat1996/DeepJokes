@@ -43,9 +43,9 @@ NUM_DEV_TEST_JOKES          = NUM_DEV_JOKES + NUM_TEST_JOKES
 # Hyperparameters for the model
 LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
-LOSS_FUNCTION               = 'MMSE'
+LOSS_FUNCTION               = 'RMSE'
 OPTIMIZER                   = 'Adam'
-NUM_ITERATIONS              = 50
+NUM_ITERATIONS              = 100
 ACTIVATION_FUNCTION         = 'Tanh'
 HIDDEN_DIMENSION            = 5
 STACK_NUMBER                = 6
@@ -112,7 +112,7 @@ test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
 
 # The stacked auto encoder model
 class StackedAutoEncoder(nn.Module):
-    def __init__(self, input_dim = num_jokes, hidden_dim = 5, output_dim = num_jokes):
+    def __init__(self, input_dim = num_jokes, hidden_dim = HIDDEN_DIMENSION, output_dim = num_jokes):
         super(StackedAutoEncoder, self).__init__()
 
         ae_sigmoid = [
@@ -133,9 +133,9 @@ class StackedAutoEncoder(nn.Module):
             nn.Linear(hidden_dim, output_dim)
         ]
 
-        if ACTIVATION_FUNCTION.lower() is 'sigmoid':
+        if ACTIVATION_FUNCTION.lower() == 'sigmoid':
             ae_seq = ae_sigmoid
-        elif ACTIVATION_FUNCTION.lower() is 'relu':
+        elif ACTIVATION_FUNCTION.lower() == 'relu':
             ae_seq = ae_relu
         else:
             ae_seq = ae_tanh
@@ -259,7 +259,13 @@ def getLoss(predicted, actual, loss_function='MMSE'):
 def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=False):
         # Training on train data
     stackedAutoEncoder  = StackedAutoEncoder().to(DEVICE)
-    optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
+    # optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
+    if OPTIMIZER.lower() == 'sgd':
+        optimizer = optim.SGD(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay, momentum = 0.9)
+    elif OPTIMIZER.lower() == 'rmsprop':
+        optimizer = optim.RMSprop(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay, momentum = 0.9)
+    else: # Adam(default)
+        optimizer = optim.Adam(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
 
     print("Training...")
     # Train the model
@@ -273,10 +279,13 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
         loss.backward()
         optimizer.step()
 
+        dev_loss = dev(stackedAutoEncoder, loss_function)
+
         epoch_train_loss.append((i + 1, loss.data.item()))
-        epoch_dev_loss.append(dev(stackedAutoEncoder, loss_function))
+        epoch_dev_loss.append((i + 1, dev_loss))
 
         print("Epoch #", (i + 1), ": Training loss: ", loss.data.item())
+        print("Epoch #", (i + 1), ": Dev loss: ", dev_loss)
 
     print("Training finished.\n")
 
@@ -289,12 +298,15 @@ def train(learing_rate, weight_decay, loss_function, num_iterations, save_model=
     print("Precision of dev data: " + str(precision_dev))
     print("Recall on dev data: " + str(recall_dev))
 
+    print("\n")
+
     if (save_model):
         print("Saving model...")
         torch.save(stackedAutoEncoder, "model")
         print("Saved model.")
+        print("\n")
 
-    return epoch_train_loss, epoch_dev_loss
+    return epoch_train_loss, epoch_dev_loss, precision_dev, recall_dev
 
 def dev(model, loss_function):
     predicted_ratings = model(dev_data)
@@ -331,257 +343,175 @@ def plot_images(plot_data, labels, xlabel, ylabel, filename):
     plt.savefig(filename)
     plt.clf()
 
-def plot_dev_loss(hyper_param, dev_loss, xlabel, ylabel, filename):
-    plt.clf()
-    plt.plot(hyper_param, dev_loss)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.savefig(filename)
-    plt.clf()
-
-def experiment_activation_function():
-    # Load a list of layer format
-    # 4 of Type1: A - A - A - A - A - A
-    # 12 of Type2: A - B - B - B - B - A
-    # 24 Type3: A - B - B - B - B - C
-    # 40 in total
-    formats = [[('Sigmoid',6)                                           ],
-               [('Tanh',6)                                              ],
-               [('ReLU',6)                                              ],
-               [('LeakyReLU',6)                                         ],
-               [('Sigmoid',1),      ('Tanh',4),         ('Sigmoid',1)   ],
-               [('Sigmoid',1),      ('ReLU',4),         ('Sigmoid',1)   ],
-               [('Sigmoid',1),      ('LeakyReLU',4),    ('Sigmoid',1)   ],
-               [('Tanh',1),         ('Sigmoid',4),      ('Tanh',1)      ],
-               [('Tanh',1),         ('ReLU',4),         ('Tanh',1)      ],
-               [('Tanh',1),         ('LeakyReLU',4),    ('Tanh',1)      ],
-               [('ReLU',1),         ('Sigmoid',4),      ('ReLU',1)      ],
-               [('ReLU',1),         ('Tanh',4),         ('ReLU',1)      ],
-               [('ReLU',1),         ('LeakyReLU',4),    ('ReLU',1)      ],
-               [('LeakyReLU',1),    ('Sigmoid',4),      ('LeakyReLU',1) ],
-               [('LeakyReLU',1),    ('Tanh',4),         ('LeakyReLU',1) ],
-               [('LeakyReLU',1),    ('ReLU',4),         ('LeakyReLU',1) ],
-               [('Sigmoid',1),      ('Tanh',4),         ('ReLU',1)      ],
-               [('Sigmoid',1),      ('Tanh',4),         ('LeakyReLU',1) ],
-               [('Sigmoid',1),      ('ReLU',4),         ('Tanh',1)      ],
-               [('Sigmoid',1),      ('ReLU',4),         ('LeakyReLU',1) ],
-               [('Sigmoid',1),      ('LeakyReLU',4),    ('Tanh',1)      ],
-               [('Sigmoid',1),      ('LeakyReLU',4),    ('ReLU',1)      ],
-               [('Tanh',1),         ('Sigmoid',4),      ('ReLU',1)      ],
-               [('Tanh',1),         ('Sigmoid',4),      ('LeakyReLU',1) ],
-               [('Tanh',1),         ('ReLU',4),         ('Sigmoid',1)   ],
-               [('Tanh',1),         ('ReLU',4),         ('LeakyReLU',1) ],
-               [('Tanh',1),         ('LeakyReLU',4),    ('Sigmoid',1)   ],
-               [('Tanh',1),         ('LeakyReLU',4),    ('ReLU',1)      ],
-               [('ReLU',1),         ('Sigmoid',4),      ('Tanh',1)      ],
-               [('ReLU',1),         ('Sigmoid',4),      ('LeakyReLU',1) ],
-               [('ReLU',1),         ('Tanh',4),         ('Sigmoid',1)   ],
-               [('ReLU',1),         ('Tanh',4),         ('LeakyReLU',1) ],
-               [('ReLU',1),         ('LeakyReLU',4),    ('Sigmoid',1)   ],
-               [('ReLU',1),         ('LeakyReLU',4),    ('Tanh',1)      ],
-               [('LeakyReLU',1),    ('Sigmoid',4),      ('Tanh',1)      ],
-               [('LeakyReLU',1),    ('Sigmoid',4),      ('ReLU',1)      ],
-               [('LeakyReLU',1),    ('Tanh',4),         ('Sigmoid',1)   ],
-               [('LeakyReLU',1),    ('Tanh',4),         ('ReLU',1)      ],
-               [('LeakyReLU',1),    ('ReLU',4),         ('Sigmoid',1)   ],
-               [('LeakyReLU',1),    ('ReLU',4),         ('Tanh',1)      ]]
-
-    epoch_loss_list = []
-    dev_loss_list = []
-    precision_list = []
-    recall_list = []
-    for fmt in formats:
-        ACTIVATION_SEQUENCE = fmt
-        print("Running on " + str(ACTIVATION_SEQUENCE))
-        epoch_loss, dev_loss, test_loss, precision, recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
-        epoch_loss_list.append(epoch_loss)
-        dev_loss_list.append(dev_loss)
-        precision_list.append(precision)
-        recall_list.append(recall)
-
-    # Plot loss function
-    sorted_idx = np.argsort(dev_loss_list)
-    plot_data = []
-    labels = []
-    for idx in sorted_idx[:10]:
-        plot_data.append(epoch_loss_list[idx])
-        labels.append(str(formats[idx]))
-    plot_images(plot_data, labels, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingActivationFuns.png")
-    with open("results/" + LOSS_FUNCTION + "_VaryingActivationFuns.txt", 'w') as f:
-        for idx in sorted_idx:
-            f.write('dev_lost: ' + str(dev_loss_list[idx]) + ' - format: ' + str(formats[idx]) + '\n')
-
-    # Plot Precision
-    min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
-    sorted_idx = np.argsort(min_precision_list)
-    plot_data = []
-    labels = []
-    for idx in sorted_idx[:10]:
-        plot_data.append(precision_list[idx])
-        labels.append(str(formats[idx]))
-    plot_images(plot_data, labels, "Epoch", "Precision", "results/Precision_VaryingActivationFuns.png")
-    with open("results/Precision_VaryingActivationFuns.txt", 'w') as f:
-        for idx in sorted_idx:
-            f.write('dev_lost: ' + str(min_precision_list[idx]) + ' - format: ' + str(formats[idx]) + '\n')
-
-    # Plot Recall
-    min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
-    sorted_idx = np.argsort(min_recall_list)
-    plot_data = []
-    labels = []
-    for idx in sorted_idx[:10]:
-        plot_data.append(recall_list[idx])
-        labels.append(str(formats[idx]))
-    plot_images(plot_data, labels, "Epoch", "Recall", "results/Recall_VaryingActivationFuns.png")
-    with open("results/Recall_VaryingActivationFuns.txt", 'w') as f:
-        for idx in sorted_idx:
-            f.write('dev_lost: ' + str(min_recall_list[idx]) + ' - format: ' + str(formats[idx]) + '\n')
-
-    return formats[np.argmin(dev_loss_list)]
-
 def experiment_optimizers():
-    optimizer_list = ['adagrad', 'sgd', 'rmsprop', 'adam']
-    epoch_loss_list = []
+    train_loss_list = []
     dev_loss_list = []
     precision_list = []
     recall_list = []
-    # define ACTIVATION_SEQUENCE
+    optimizer_list = ['SGD', 'RMSprop', 'Adam']
     for optimizer in optimizer_list:
         OPTIMIZER = optimizer
-        print("Running on " + OPTIMIZER + " optimizer")
-        epoch_loss, dev_loss, test_loss, precision, recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
-        epoch_loss_list.append(epoch_loss)
-        dev_loss_list.append(dev_loss)
-        precision_list.append(precision)
-        recall_list.append(recall)
+        print("Running on " + str(OPTIMIZER))
+        epoch_train_loss, epoch_dev_loss, precision_dev, recall_dev = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
+        train_loss_list.append(epoch_train_loss)
+        dev_loss_list.append(epoch_dev_loss)
+        precision_list.append(precision_dev)
+        recall_list.append(recall_dev)
 
     # Plot loss function
-    sorted_idx = np.argsort(dev_loss_list)
-    plot_images(epoch_loss_list, optimizer_list, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingOptimizers.png")
-    with open("results/" + LOSS_FUNCTION + '_VaryingOptimizers.txt', 'w') as f:
-        for idx in sorted_idx:
-            f.write('dev_lost: ' + str(dev_loss_list[idx]) + ' - optimizer: ' + str(optimizer_list[idx]) + '\n')
+    plot_images(train_loss_list, optimizer_list, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingOptimzers_train.png")
+    plot_images(dev_loss_list, optimizer_list, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingOptimzers_dev.png")
+    with open("results/" + LOSS_FUNCTION + "_VaryingOptimzers.txt", 'w') as f:
+        for idx in range(len(optimizer_list)):
+            f.write('Optimizer: ' + str(optimizer_list[idx]) + '\t' + LOSS_FUNCTION + ' Train: ' + str(train_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(optimizer_list)):
+            f.write('Optimizer: ' + str(optimizer_list[idx]) + '\t' + LOSS_FUNCTION + ' Dev: ' + str(dev_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(optimizer_list)):
+            f.write('Optimizer: ' + str(optimizer_list[idx]) + '\t Precision: ' + str(precision_list[idx]) + '\n')
+        f.write('\n')
+        for idx in range(len(optimizer_list)):
+            f.write('Optimizer: ' + str(optimizer_list[idx]) + '\t Recall: ' + str(recall_list[idx]) + '\n')
 
-    # Plot Precision
-    min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
-    sorted_idx = np.argsort(min_precision_list)
-    plot_images(precision_list, optimizer_list, "Epoch", "Precision", "results/Precision_VaryingOptimizers.png")
-    with open("results/Precision_VaryingOptimizers.txt", 'w') as f:
-        for idx in sorted_idx:
-            f.write('dev_lost: ' + str(min_precision_list[idx]) + ' - optimizer: ' + str(optimizer_list[idx]) + '\n')
+    return optimizer_list[np.argmin([l[-1][1] for l in dev_loss_list])]
 
-    # Plot Recall
-    min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
-    sorted_idx = np.argsort(min_recall_list)
-    plot_images(recall_list, optimizer_list, "Epoch", "Recall", "results/Recall_VaryingOptimizers.png")
-    with open("results/Recall_VaryingOptimizers.txt", 'w') as f:
-        for idx in sorted_idx:
-            f.write('dev_lost: ' + str(min_recall_list[idx]) + ' - optimizer: ' + str(optimizer_list[idx]) + '\n')
+def experiment_activation_function():
+    train_loss_list = []
+    dev_loss_list = []
+    precision_list = []
+    recall_list = []
+    func_type_list = ['Sigmoid', 'ReLU', 'Tanh']
+    for func_type in func_type_list:
+        ACTIVATION_FUNCTION = func_type
+        print("Running on " + str(ACTIVATION_FUNCTION))
+        epoch_train_loss, epoch_dev_loss, precision_dev, recall_dev = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
+        train_loss_list.append(epoch_train_loss)
+        dev_loss_list.append(epoch_dev_loss)
+        precision_list.append(precision_dev)
+        recall_list.append(recall_dev)
 
-    return optimizer_list[np.argmin(dev_loss_list)]
+    # Plot loss function
+    plot_images(train_loss_list, func_type_list, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingActivationFuns_train.png")
+    plot_images(dev_loss_list, func_type_list, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingActivationFuns_dev.png")
+    with open("results/" + LOSS_FUNCTION + "_VaryingActivationFuns.txt", 'w') as f:
+        for idx in range(len(func_type_list)):
+            f.write('Activation Function: ' + str(func_type_list[idx]) + '\t' + LOSS_FUNCTION + ' Train: ' + str(train_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(func_type_list)):
+            f.write('Activation Function: ' + str(func_type_list[idx]) + '\t' + LOSS_FUNCTION + ' Dev: ' + str(dev_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(func_type_list)):
+            f.write('Activation Function: ' + str(func_type_list[idx]) + '\t Precision: ' + str(precision_list[idx]) + '\n')
+        f.write('\n')
+        for idx in range(len(func_type_list)):
+            f.write('Activation Function: ' + str(func_type_list[idx]) + '\t Recall: ' + str(recall_list[idx]) + '\n')
+
+    return func_type_list[np.argmin([l[-1][1] for l in dev_loss_list])]
 
 def experiment_hidden_dimension():
-    hidden_dimension_list = range(5,55,5)
-    # define ACTIVATION_SEQUENCE and optimizer
-    epoch_loss_list = []
+    train_loss_list = []
     dev_loss_list = []
     precision_list = []
     recall_list = []
     label = []
+    hidden_dimension_list = [4, 8, 16]
     for hidden_dimension in hidden_dimension_list:
         HIDDEN_DIMENSION = hidden_dimension
-        print("Running on " + str(HIDDEN_DIMENSION) + " hidden dimensions")
-        epoch_loss, dev_loss, test_loss, precision, recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
-        epoch_loss_list.append(epoch_loss)
-        dev_loss_list.append(dev_loss)
-        precision_list.append(precision)
-        recall_list.append(recall)
-        label.append(str(hidden_dimension) + " hidden dim")
+        print("Running on " + "Num of Hidden Dims: " +  str(HIDDEN_DIMENSION))
+        epoch_train_loss, epoch_dev_loss, precision_dev, recall_dev = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
+        train_loss_list.append(epoch_train_loss)
+        dev_loss_list.append(epoch_dev_loss)
+        precision_list.append(precision_dev)
+        recall_list.append(recall_dev)
+        label.append("Num of Hidden Dims: " + str(HIDDEN_DIMENSION))
 
     # Plot loss function
-    plot_images(epoch_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingHiddenDim.png")
-    plot_dev_loss(hidden_dimension_list, dev_loss_list, "Number of Hidden Dimensions", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingHiddenDim_Dev.png")
+    plot_images(train_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingHiddemDims_train.png")
+    plot_images(dev_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingHiddemDims_dev.png")
+    with open("results/" + LOSS_FUNCTION + "_VaryingHiddemDims.txt", 'w') as f:
+        for idx in range(len(hidden_dimension_list)):
+            f.write('Number of Hiddem Dimensions: ' + str(hidden_dimension_list[idx]) + '\t' + LOSS_FUNCTION + ' Train: ' + str(train_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(hidden_dimension_list)):
+            f.write('Number of Hiddem Dimensions: ' + str(hidden_dimension_list[idx]) + '\t' + LOSS_FUNCTION + ' Dev: ' + str(dev_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(hidden_dimension_list)):
+            f.write('Number of Hiddem Dimensions: ' + str(hidden_dimension_list[idx]) + '\t Precision: ' + str(precision_list[idx]) + '\n')
+        f.write('\n')
+        for idx in range(len(hidden_dimension_list)):
+            f.write('Number of Hiddem Dimensions: ' + str(hidden_dimension_list[idx]) + '\t Recall: ' + str(recall_list[idx]) + '\n')
 
-    # Plot Precision
-    min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
-    plot_images(precision_list, label, "Epoch", "Precision", "results/Precision_VaryingHiddenDim.png")
-    plot_dev_loss(hidden_dimension_list, min_precision_list, "Number of Hidden Dimensions", "Precision", "results/Precision_VaryingHiddenDim_Dev.png")
-
-    # Plot Recall
-    min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
-    plot_images(recall_list, label, "Epoch", "Recall", "results/Recall_VaryingHiddenDim.png")
-    plot_dev_loss(hidden_dimension_list, min_recall_list, "Number of Hidden Dimensions", "Recall", "results/Recall_VaryingHiddenDim_Dev.png")
-
-    return hidden_dimension_list[np.argmin(dev_loss_list)]
+    return hidden_dimension_list[np.argmin([l[-1][1] for l in dev_loss_list])]
 
 def experiment_stack_number():
-    stack_number_list = range(6,54,6)
-    epoch_loss_list = []
+    train_loss_list = []
     dev_loss_list = []
     precision_list = []
     recall_list = []
     label = []
-    for stack_num in stack_number_list:
-        if len(ACTIVATION_SEQUENCE) is 1:
-            ACTIVATION_SEQUENCE[0] = (ACTIVATION_SEQUENCE[0][0], stack_num)
-        else:
-            ACTIVATION_SEQUENCE[1] = (ACTIVATION_SEQUENCE[1][0], stack_num-2)
-        print("Running on " + str(ACTIVATION_SEQUENCE) + " with " + str(stack_num) + " stacks")
-        epoch_loss, dev_loss, test_loss, precision, recall = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
-        epoch_loss_list.append(epoch_loss)
-        dev_loss_list.append(dev_loss)
-        precision_list.append(precision)
-        recall_list.append(recall)
-        label.append("Number of stacks: " + str(stack_num))
+    stack_num_list = [3, 6, 9, 12, 15]
+    for stack_num in stack_num_list:
+        STACK_NUMBER = stack_num
+        print("Running on " + "Num of Stacks: " + str(STACK_NUMBER))
+        epoch_train_loss, epoch_dev_loss, precision_dev, recall_dev = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
+        train_loss_list.append(epoch_train_loss)
+        dev_loss_list.append(epoch_dev_loss)
+        precision_list.append(precision_dev)
+        recall_list.append(recall_dev)
+        label.append("Num of Stacks: " + str(STACK_NUMBER))
 
     # Plot loss function
-    plot_images(epoch_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingStackNums.png")
-    plot_dev_loss(stack_number_list, dev_loss_list, "Number of Stacks", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingStackNums_Dev.png")
+    plot_images(train_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingStacks_train.png")
+    plot_images(dev_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingStacks_dev.png")
+    with open("results/" + LOSS_FUNCTION + "_VaryingStacks.txt", 'w') as f:
+        for idx in range(len(stack_num_list)):
+            f.write('Number of Stacks: ' + str(stack_num_list[idx]) + '\t' + LOSS_FUNCTION + ' Train: ' + str(train_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(stack_num_list)):
+            f.write('Number of Stacks: ' + str(stack_num_list[idx]) + '\t' + LOSS_FUNCTION + ' Dev: ' + str(dev_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(stack_num_list)):
+            f.write('Number of Stacks: ' + str(stack_num_list[idx]) + '\t Precision: ' + str(precision_list[idx]) + '\n')
+        f.write('\n')
+        for idx in range(len(stack_num_list)):
+            f.write('Number of Stacks: ' + str(stack_num_list[idx]) + '\t Recall: ' + str(recall_list[idx]) + '\n')
 
-    # Plot Precision
-    min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
-    plot_images(precision_list, label, "Epoch", "Precision", "results/Precision_VaryingStackNums.png")
-    plot_dev_loss(stack_number_list, min_precision_list, "Number of Stacks", "Precision", "results/Precision_VaryingStackNums_Dev.png")
-
-    # Plot Recall
-    min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
-    plot_images(recall_list, label, "Epoch", "Recall", "results/Recall_VaryingStackNums.png")
-    plot_dev_loss(stack_number_list, min_recall_list, "Number of Stacks", "Recall", "results/Recall_VaryingStackNums_Dev.png")
-
-    return stack_number_list[np.argmin(dev_loss_list)]
+    return stack_num_list[np.argmin([l[-1][1] for l in dev_loss_list])]
 
 def experiment_learning_rate():
-    learning_rates = [i / 100.0 for i in range(1, 10)]
-    epoch_loss_list = []
+    train_loss_list = []
     dev_loss_list = []
     precision_list = []
     recall_list = []
     label = []
-    for learning_rate in learning_rates:
-        print("Running on " + str(learning_rate) + " learning rate")
-        epoch_loss, dev_loss, test_loss, precision, recall = train(learning_rate, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
-        epoch_loss_list.append(epoch_loss)
-        dev_loss_list.append(dev_loss)
-        precision_list.append(precision)
-        recall_list.append(recall)
+    learning_rate_list = [i / 100.0 for i in range(1, 10)]
+    for learning_rate in learning_rate_list:
+        print("Running on " + "Learning rate: " + str(learning_rate))
+        epoch_train_loss, epoch_dev_loss, precision_dev, recall_dev = train(LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, False)
+        train_loss_list.append(epoch_train_loss)
+        dev_loss_list.append(epoch_dev_loss)
+        precision_list.append(precision_dev)
+        recall_list.append(recall_dev)
         label.append("Learning rate: " + str(learning_rate))
 
     # Plot loss function
-    plot_images(epoch_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingLearningRate.png")
-    plot_dev_loss(learning_rates, dev_loss_list, "Learning Rate", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingLearningRate_Dev.png")
+    plot_images(train_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingLearnigRates_train.png")
+    plot_images(dev_loss_list, label, "Epoch", LOSS_FUNCTION, "results/" + LOSS_FUNCTION + "_VaryingLearnigRates_dev.png")
+    with open("results/" + LOSS_FUNCTION + "_VaryingLearnigRates.txt", 'w') as f:
+        for idx in range(len(learning_rate_list)):
+            f.write('Learning Rate: ' + str(learning_rate_list[idx]) + '\t' + LOSS_FUNCTION + ' Train: ' + str(train_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(learning_rate_list)):
+            f.write('Learning Rate: ' + str(learning_rate_list[idx]) + '\t' + LOSS_FUNCTION + ' Dev: ' + str(dev_loss_list[idx][-1]) + '\n')
+        f.write('\n')
+        for idx in range(len(learning_rate_list)):
+            f.write('Learning Rate: ' + str(learning_rate_list[idx]) + '\t Precision: ' + str(precision_list[idx]) + '\n')
+        f.write('\n')
+        for idx in range(len(learning_rate_list)):
+            f.write('Learning Rate: ' + str(learning_rate_list[idx]) + '\t Recall: ' + str(recall_list[idx]) + '\n')
 
-    # Plot Precision
-    min_precision_list = [np.min([p[1] for p in pc]) for pc in precision_list]
-    plot_images(precision_list, label, "Epoch", "Precision", "results/Precision_VaryingLearningRate.png")
-    plot_dev_loss(learning_rates, min_precision_list, "Learning Rate", "Precision", "results/Precision_VaryingLearningRate_Dev.png")
-
-    # Plot Recall
-    min_recall_list = [np.min([r[1] for r in rc]) for rc in recall_list]
-    plot_images(recall_list, label, "Epoch", "Recall", "results/Recall_VaryingLearningRate.png")
-    plot_dev_loss(learning_rates, min_recall_list, "Learning Rate", "Recall", "results/Recall_VaryingLearningRate_Dev.png")
-
-    return learning_rates[np.argmin(dev_loss_list)]
-
+    return learning_rate_list[np.argmin([l[-1][1] for l in dev_loss_list])]
 
 def experiment_loss_functions():
     learning_rate = 0.01
@@ -600,19 +530,17 @@ def experiment_loss_functions():
 
 
 def run_experiments():
-    ACTIVATION_SEQUENCE = experiment_activation_function()
-    # ACTIVATION_SEQUENCE = [('ReLU', 1), ('Sigmoid', 4), ('Tanh', 1)]
     OPTIMIZER = experiment_optimizers()
     # OPTIMIZER = 'sgd'
+    ACTIVATION_FUNCTION = experiment_activation_function()
+    # ACTIVATION_FUNCTION = [('ReLU', 1), ('Sigmoid', 4), ('Tanh', 1)]
     HIDDEN_DIMENSION = experiment_hidden_dimension()
     # HIDDEN_DIMENSION = 5
-    stack_num = experiment_stack_number()
-    # if len(ACTIVATION_SEQUENCE) is 1:
-    #     ACTIVATION_SEQUENCE[0] = (ACTIVATION_SEQUENCE[0][0], stack_num)
-    # else:
-    #     ACTIVATION_SEQUENCE[1] = (ACTIVATION_SEQUENCE[1][0], stack_num-2)
-    learning_rate = experiment_learning_rate()
-#    experiment_loss_functions()
+    STACK_NUMBER = experiment_stack_number()
+    # STACK_NUMBER = 6
+    LEARNING_RATE = experiment_learning_rate()
+    # LEARNING_RATE = 0.4
+    # experiment_loss_functions()
 
 ####################################################################################################
 # USER INTERACTION FOR TRAINING AND TESTING MODELS
