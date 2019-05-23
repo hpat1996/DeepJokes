@@ -141,29 +141,29 @@ class StackedAutoEncoder(nn.Module):
             ae_seq = ae_tanh
 
         if STACK_NUMBER > 0:
-            self.ae01 = nn.Sequential(*ae_seq)
-            self.ae02 = nn.Sequential(*ae_seq)
-            self.ae03 = nn.Sequential(*ae_seq)
+            self.ae01 = nn.Sequential(*ae_seq.copy())
+            self.ae02 = nn.Sequential(*ae_seq.copy())
+            self.ae03 = nn.Sequential(*ae_seq.copy())
 
         if STACK_NUMBER > 3:
-            self.ae04 = nn.Sequential(*ae_seq)
-            self.ae05 = nn.Sequential(*ae_seq)
-            self.ae06 = nn.Sequential(*ae_seq)
+            self.ae04 = nn.Sequential(*ae_seq.copy())
+            self.ae05 = nn.Sequential(*ae_seq.copy())
+            self.ae06 = nn.Sequential(*ae_seq.copy())
 
         if STACK_NUMBER > 6:
-            self.ae07 = nn.Sequential(*ae_seq)
-            self.ae08 = nn.Sequential(*ae_seq)
-            self.ae09 = nn.Sequential(*ae_seq)
+            self.ae07 = nn.Sequential(*ae_seq.copy())
+            self.ae08 = nn.Sequential(*ae_seq.copy())
+            self.ae09 = nn.Sequential(*ae_seq.copy())
 
         if STACK_NUMBER > 9:
-            self.ae10 = nn.Sequential(*ae_seq)
-            self.ae11 = nn.Sequential(*ae_seq)
-            self.ae12 = nn.Sequential(*ae_seq)
+            self.ae10 = nn.Sequential(*ae_seq.copy())
+            self.ae11 = nn.Sequential(*ae_seq.copy())
+            self.ae12 = nn.Sequential(*ae_seq.copy())
 
         if STACK_NUMBER > 12:
-            self.ae13 = nn.Sequential(*ae_seq)
-            self.ae14 = nn.Sequential(*ae_seq)
-            self.ae15 = nn.Sequential(*ae_seq)
+            self.ae13 = nn.Sequential(*ae_seq.copy())
+            self.ae14 = nn.Sequential(*ae_seq.copy())
+            self.ae15 = nn.Sequential(*ae_seq.copy())
 
     def forward(self, x):
         if STACK_NUMBER > 0:
