@@ -24,7 +24,7 @@ import torch.utils.data
 DEVICE                      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Constants for the data set 
-DATASET_FILE                = "data/jester-data.csv"
+DATASET_FILE                = "data/jester-dataset1-all.csv"
 
 DATASET_UNKNOWN_RATING      = 99
 DATASET_MIN_RATING          = -10
