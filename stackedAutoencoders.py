@@ -217,6 +217,11 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
 
     print("Training finished.\n")
 
+    if (save_model):
+        print("Saving model...")
+        torch.save(stackedAutoEncoder, "model")
+        print("Saved model.")
+ 
     if (calculate_precision):
         precision_train, recall_train = Precision_Recall_TopK(stackedAutoEncoder(train_data), train_data)
         precision_dev, recall_dev = Precision_Recall_TopK(stackedAutoEncoder(dev_data), dev_data)
@@ -227,11 +232,8 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
         print("Precision of dev data: " + str(precision_dev))
         print("Recall on dev data: " + str(recall_dev))
 
-    if (save_model):
-        print("Saving model...")
-        torch.save(stackedAutoEncoder, "model")
-        print("Saved model.")
-    
+        return epoch_train_loss, epoch_dev_loss, precision_train, recall_train, precision_dev, recall_dev
+   
     return epoch_train_loss, epoch_dev_loss
 
 def dev(model, loss_function):
@@ -251,7 +253,7 @@ def test(model, loss_function):
 
     print("\n")
 
-    return test_loss
+    return test_loss, precision_test, recall_test
 
 ####################################################################################################
 # EXPERIMENTATION
