@@ -41,6 +41,8 @@ NUM_TEST_JOKES              = 0.2
 NUM_DEV_TEST_JOKES          = NUM_DEV_JOKES + NUM_TEST_JOKES
 
 # Hyperparameters for the model
+ACTIVATION_FUNCTION         = 'ReLU'
+NUM_STACKS                  = 6
 LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
 LOSS_FUNCTION               = 'MMSE'
@@ -108,47 +110,23 @@ test_data   = torch.tensor(test_data,   device = DEVICE, dtype=torch.float)
 
 # The stacked auto encoder model
 class StackedAutoEncoder(nn.Module):
-    def __init__(self, input_dim = num_jokes, hidden_dim = 5, output_dim = num_jokes):
+    def __init__(self, input_dim = num_jokes, hidden_dim = 5, output_dim = num_jokes, activation = 'ReLU', num_stacks = 6):
         super(StackedAutoEncoder, self).__init__()
 
-        self.ae1 = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.Sigmoid(),
-            nn.Linear(hidden_dim, output_dim)
-        )
-        self.ae2 = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, output_dim)
-        )
-        self.ae3 = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, output_dim)
-        )
-        self.ae4 = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.Sigmoid(),
-            nn.Linear(hidden_dim, output_dim)
-        )
-        self.ae5 = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, output_dim)
-        )
-        self.ae6 = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, output_dim)
-        )
+        if activation.lower() == 'relu':
+            F = nn.ReLU()
+        if activation.lower() == 'tanh':
+            F = nn.Tanh()
+        if activation.lower() == 'sigmoid':
+            F = nn.Sigmoid()
+
+        self.ae = nn.ModuleList([
+                    nn.Sequential(nn.Linear(input_dim, hidden_dim), F, nn.Linear(hidden_dim, output_dim))
+                    for i in range(num_stacks)])
 
     def forward(self, x):
-        x = self.ae1(x)
-        x = self.ae2(x)
-        x = self.ae3(x)
-        x = self.ae4(x)
-        x = self.ae5(x)
-        x = self.ae6(x)
+        for ae in self.ae:
+            x = ae(x)
         return x
 
 ####################################################################################################
