@@ -1,0 +1,19 @@
+Activation Function: Sigmoid	RMSE Train: (100, 1.0755012035369873)
+Activation Function: ReLU	RMSE Train: (100, 1.0754896402359009)
+Activation Function: Tanh	RMSE Train: (100, 1.0754982233047485)
+
+Activation Function: Sigmoid	RMSE Dev: (100, 1.0720983743667603)
+Activation Function: ReLU	RMSE Dev: (100, 1.0720632076263428)
+Activation Function: Tanh	RMSE Dev: (100, 1.0720772743225098)
+
+Activation Function: Sigmoid	 Precision: 0.9061516070724717
+Activation Function: ReLU	 Precision: 0.9061516070724717
+Activation Function: Tanh	 Precision: 0.9061516070724717
+
+Activation Function: Sigmoid	 Recall: 0.8811614172375045
+Activation Function: ReLU	 Recall: 0.8811614172375045
+Activation Function: Tanh	 Recall: 0.8811614172375045
+
+Activation Function: Sigmoid	 F1: 0.8934818058837605
+Activation Function: ReLU	 F1: 0.8934818058837605
+Activation Function: Tanh	 F1: 0.8934818058837605

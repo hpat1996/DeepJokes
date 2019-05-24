@@ -1,0 +1,19 @@
+Number of Hiddem Dimensions: 4	RMSE Train: (100, 1.0749690532684326)
+Number of Hiddem Dimensions: 8	RMSE Train: (100, 1.0745621919631958)
+Number of Hiddem Dimensions: 16	RMSE Train: (100, 1.0810140371322632)
+
+Number of Hiddem Dimensions: 4	RMSE Dev: (100, 1.0777390003204346)
+Number of Hiddem Dimensions: 8	RMSE Dev: (100, 1.0776240825653076)
+Number of Hiddem Dimensions: 16	RMSE Dev: (100, 1.0842618942260742)
+
+Number of Hiddem Dimensions: 4	 Precision: 0.9051433373049201
+Number of Hiddem Dimensions: 8	 Precision: 0.9051338032479065
+Number of Hiddem Dimensions: 16	 Precision: 0.9047154937940348
+
+Number of Hiddem Dimensions: 4	 Recall: 0.8817539389936166
+Number of Hiddem Dimensions: 8	 Recall: 0.881763055785398
+Number of Hiddem Dimensions: 16	 Recall: 0.8854656993053175
+
+Number of Hiddem Dimensions: 4	 F1: 0.8932955616516373
+Number of Hiddem Dimensions: 8	 F1: 0.8932955970142626
+Number of Hiddem Dimensions: 16	 F1: 0.894987100158002
