@@ -157,7 +157,10 @@ def Precision_Recall_TopK(predicted, actual, K = 10):
         precision   += num_common / len(topK_pred)      if len(topK_pred)       != 0    else 1
         recall      += num_common / len(relevant_items) if len(relevant_items)  != 0    else 1
 
-    return ((precision / n), (recall / n))
+    precision   = precision / n
+    recall      = recall / n
+    F1          = (precision * recall) / (precision + recall)
+    return precision, recall, F1
 
 
 # MMSE Loss function
@@ -223,18 +226,22 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
         print("Saved model.")
  
     if (calculate_precision):
-        precision_train, recall_train = Precision_Recall_TopK(stackedAutoEncoder(train_data), train_data)
-        precision_dev, recall_dev = Precision_Recall_TopK(stackedAutoEncoder(dev_data), dev_data)
+        precision_train,    recall_train,   F1_train    = Precision_Recall_TopK(stackedAutoEncoder(train_data), train_data)
+        precision_dev,      recall_dev,     F1_dev      = Precision_Recall_TopK(stackedAutoEncoder(dev_data), dev_data)
 
         print("Precision of train data: " + str(precision_train))
         print("Recall on train data: " + str(recall_train))
+        print("F1 score for train data: " + str(F1_train))
+        print()
 
         print("Precision of dev data: " + str(precision_dev))
         print("Recall on dev data: " + str(recall_dev))
+        print("F1 score for dev data: " + str(F1_dev))
+        print()
 
-        return epoch_train_loss, epoch_dev_loss, precision_train, recall_train, precision_dev, recall_dev
+        return ((epoch_train_loss, precision_train, recall_train, F1_train), (epoch_dev_loss, precision_dev, recall_dev, F1_dev))
    
-    return epoch_train_loss, epoch_dev_loss
+    return (epoch_train_loss, epoch_dev_loss)
 
 def dev(model, loss_function):
     predicted_ratings = model(dev_data)
