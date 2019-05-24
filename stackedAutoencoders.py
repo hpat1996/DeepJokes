@@ -335,7 +335,7 @@ mode = sys.argv[1]
 
 if (mode == 'train'):
     # Training on train data
-    train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, calculate_precision=False, save_model=True)
+    train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, calculate_precision=True, save_model=True)
 
 elif (mode == 'test'):
     # Testing on test data
