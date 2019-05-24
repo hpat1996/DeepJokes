@@ -214,9 +214,12 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
         optimizer.step()
 
         epoch_train_loss.append((i + 1, loss.data.item()))
-        epoch_dev_loss.append(dev(stackedAutoEncoder, loss_function))
 
-        print("Epoch #", (i + 1), ": Training loss: ", loss.data.item())
+        dev_loss = dev(stackedAutoEncoder, loss_function)
+        epoch_dev_loss.append(dev_loss)
+
+        print("Epoch #", (i + 1), ":\t Training loss: ", round(loss.data.item(), 8), "\t Dev loss: ", round(dev_loss, 8))
+
 
     print("Training finished.\n")
 
@@ -332,7 +335,7 @@ mode = sys.argv[1]
 
 if (mode == 'train'):
     # Training on train data
-    train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, calculate_precision=True, save_model=True)
+    train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, calculate_precision=False, save_model=True)
 
 elif (mode == 'test'):
     # Testing on test data
