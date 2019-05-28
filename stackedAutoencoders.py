@@ -280,46 +280,18 @@ def test(model, loss_function):
 def plot_images(plot_data, labels, xlabel, ylabel, filename):
     refined_data = []
     for data in plot_data:
-        refined_data.append(list(filter(lambda x: x[1] < 10, data)))
+        refined_data.append(list(filter(lambda x: x[1] < 5, data)))
 
     plt.clf()
     for data, label in zip(refined_data, labels):
         xs = [x[0] for x in data]
         ys = [y[1] for y in data]
         plt.plot(xs, ys, label=label)
-    plt.legend(loc='best')
+    plt.legend(loc='upper right')
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.savefig(filename)
     plt.clf()
-
-
-def experiment_learning_rate():
-    print("Experimenting with learning rate...")
-    learning_rates = [0.01, 0.02, 0.03, 0.04, 0.06, 0.08]
-
-    plot_data_train = []
-    plot_data_dev = []
-    labels = []
-    for learning_rate in learning_rates:
-        print("Trying learning rate: " + str(learning_rate))
-        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
-        plot_data_train.append(epoch_train_loss[10:])
-        plot_data_dev.append(epoch_dev_loss[10:])
-        labels.append("Learning rate: " + str(learning_rate))
-    plot_images(plot_data_train, labels, "Epoch", "Masked Mean squared error", "images/VaryingLearningRate_MMSE_Train.png")
-    plot_images(plot_data_dev, labels, "Epoch", "Masked Mean squared error", "images/VaryingLearningRate_MMSE_Dev.png")
-
-    plot_data_train = []
-    plot_data_dev = []
-    labels = []
-    for learning_rate in learning_rates:
-        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
-        plot_data_train.append(epoch_train_loss[10:])
-        plot_data_dev.append(epoch_dev_loss[10:])
-        labels.append("Learning rate: " + str(learning_rate))
-    plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingLearningRate_RMSE_Train.png")
-    plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingLearningRate_RMSE_Dev.png")
 
 
 def experiment_loss_functions():
@@ -344,6 +316,36 @@ def experiment_loss_functions():
     plot_images(plot_data_train, labels, "Epoch", "Error", "images/VaryingLossFunction_Train.png")
     plot_images(plot_data_dev, labels, "Epoch", "Error", "images/VaryingLossFunction_Dev.png")
 
+
+def experiment_learning_rate():
+    print("Experimenting with learning rate...")
+    learning_rates = [0.01, 0.02, 0.03, 0.04, 0.06, 0.08]
+
+    # plot_data_train = []
+    # plot_data_dev = []
+    # labels = []
+    # for learning_rate in learning_rates:
+    #     print("Trying learning rate: " + str(learning_rate))
+    #     epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
+    #     plot_data_train.append(epoch_train_loss[10:])
+    #     plot_data_dev.append(epoch_dev_loss[10:])
+    #     labels.append("Learning rate: " + str(learning_rate))
+    # plot_images(plot_data_train, labels, "Epoch", "Masked Mean squared error", "images/VaryingLearningRate_MMSE_Train.png")
+    # plot_images(plot_data_dev, labels, "Epoch", "Masked Mean squared error", "images/VaryingLearningRate_MMSE_Dev.png")
+
+    plot_data_train = []
+    plot_data_dev = []
+    labels = []
+    for learning_rate in learning_rates:
+        print("Trying learning rate: " + str(learning_rate))
+        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
+        plot_data_train.append(epoch_train_loss[10:])
+        plot_data_dev.append(epoch_dev_loss[10:])
+        labels.append("Learning rate: " + str(learning_rate))
+    plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingLearningRate_RMSE_Train.png")
+    plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingLearningRate_RMSE_Dev.png")
+
+
 def experiment_hidden_dim():
     print("Experimenting with hidden dimensions...")
     hidden_dims = [4, 8, 16]
@@ -359,6 +361,7 @@ def experiment_hidden_dim():
         labels.append("Hidden dimension: " + str(hidden_dim))
     plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingHiddenDim_RMSE_Train.png")
     plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingHiddenDim_RMSE_Dev.png")
+
 
 def experiment_num_stack():
     print("Experimenting with number of stacks...")
@@ -376,6 +379,7 @@ def experiment_num_stack():
     plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingNumStack_RMSE_Train.png")
     plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingNumStack_RMSE_Dev.png")
 
+
 def experiment_optimizer():
     print("Experimenting with optimizer...")
     optimizers = ['Adam', 'SGD', 'RMSProp']
@@ -392,9 +396,10 @@ def experiment_optimizer():
     plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingOptimizer_RMSE_Train.png")
     plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingOptimizer_RMSE_Dev.png")
 
+
 def run_experiments():
+    # experiment_loss_functions()
     experiment_learning_rate()
-    experiment_loss_functions()
     experiment_hidden_dim()
     experiment_num_stack()
     experiment_optimizer()
