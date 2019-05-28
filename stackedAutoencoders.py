@@ -33,7 +33,7 @@ DATASET_MAX_RATING          = 10
 NORMALIZED_UNKNOWN_RATING   = 99
 NORMALIZED_MIN_RATING       = 1
 NORMALIZED_MAX_RATING       = 5
-NORMALIZED_ROUNDED          = True
+NORMALIZED_ROUNDED          = False
 
 NUM_DEV_TEST_USERS          = 0.5
 NUM_DEV_JOKES               = 0.3
@@ -48,6 +48,7 @@ LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
 LOSS_FUNCTION               = 'MMSE'
 NUM_ITERATIONS              = 100
+OPTIMIZER                   = 'Adam'
 
 print("\n")
 print("Initializing...")
@@ -196,10 +197,17 @@ def getLoss(predicted, actual, loss_function='MMSE'):
 # TRAIN AND TEST
 ####################################################################################################
 
-def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_function, num_iterations, calculate_precision = False, save_model = False):
+def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_function, num_iterations, optimizer, calculate_precision = False, save_model = False):
         # Training on train data
     stackedAutoEncoder  = StackedAutoEncoder(hidden_dim = hidden_dim, activation = activation, num_stacks = num_stacks).to(DEVICE)
-    optimizer           = optim.Adam(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
+
+    if optimizer.lower() == 'adam':
+        opt = optim.Adam(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
+    if optimizer.lower() == 'sgd':
+        opt = optim.SGD(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
+    if optimizer.lower() == 'rmsprop':
+        opt = optim.RMSprop(stackedAutoEncoder.parameters(), lr = learing_rate, weight_decay = weight_decay)
+
 
     print("Training...")
     # Train the model
@@ -208,15 +216,15 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
     for i in range(num_iterations):
         predicted_ratings = stackedAutoEncoder(train_data)
 
-        optimizer.zero_grad() 
+        opt.zero_grad() 
         loss = getLoss(predicted_ratings, train_data, loss_function)
         loss.backward()
-        optimizer.step()
+        opt.step()
 
         epoch_train_loss.append((i + 1, loss.data.item()))
 
         dev_loss = dev(stackedAutoEncoder, loss_function)
-        epoch_dev_loss.append(dev_loss)
+        epoch_dev_loss.append((i + 1, dev_loss))
 
         print("Epoch #", (i + 1), ":\t Training loss: ", round(loss.data.item(), 8), "\t Dev loss: ", round(dev_loss, 8))
 
@@ -270,6 +278,10 @@ def test(model, loss_function):
 ####################################################################################################
 
 def plot_images(plot_data, labels, xlabel, ylabel, filename):
+    refined_data = []
+    for data in plot_data:
+        refined_data.append(list(filter(lambda x: x[1] < 5.0, data)))
+
     plt.clf()
     for data, label in zip(plot_data, labels):
         xs = [x[0] for x in data]
@@ -284,48 +296,108 @@ def plot_images(plot_data, labels, xlabel, ylabel, filename):
 
 def experiment_learning_rate():
     print("Experimenting with learning rate...")
-    learning_rates = [i / 100.0 for i in range(1, 10)]
+    learning_rates = [0.01, 0.02, 0.03, 0.04, 0.06, 0.08]
 
-    plot_data = []
+    plot_data_train = []
+    plot_data_dev = []
     labels = []
     for learning_rate in learning_rates:
         print("Trying learning rate: " + str(learning_rate))
-        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, calculate_precision = False, save_model = False)
-        plot_data.append(epoch_train_loss[10:])
+        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
+        plot_data_train.append(epoch_train_loss[10:])
+        plot_data_dev.append(epoch_dev_loss[10:])
         labels.append("Learning rate: " + str(learning_rate))
-    plot_images(plot_data, labels, "Epoch", "Masked Mean squared error", "images/VaryingLearningRate_MMSE.png")
+    plot_images(plot_data_train, labels, "Epoch", "Masked Mean squared error", "images/VaryingLearningRate_MMSE_Train.png")
+    plot_images(plot_data_dev, labels, "Epoch", "Masked Mean squared error", "images/VaryingLearningRate_MMSE_Dev.png")
 
-    plot_data = []
+    plot_data_train = []
+    plot_data_dev = []
     labels = []
     for learning_rate in learning_rates:
-        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, calculate_precision = False, save_model = False)
-        plot_data.append(epoch_train_loss[10:])
+        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
+        plot_data_train.append(epoch_train_loss[10:])
+        plot_data_dev.append(epoch_dev_loss[10:])
         labels.append("Learning rate: " + str(learning_rate))
-    plot_images(plot_data, labels, "Epoch", "Root Mean squared error", "images/VaryingLearningRate_RMSE.png")
+    plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingLearningRate_RMSE_Train.png")
+    plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingLearningRate_RMSE_Dev.png")
 
 
 def experiment_loss_functions():
     print("Experimenting with loss functions...")
     learning_rate = 0.01
-    plot_data = []
+    plot_data_train = []
+    plot_data_dev = []
     labels = []
 
     print("Trying MMSE")
-    epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, calculate_precision = False, save_model = False)
-    plot_data.append(epoch_train_loss[10:])
+    epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "MMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
+    plot_data_train.append(epoch_train_loss[10:])
+    plot_data_dev.append(epoch_dev_loss[10:])
     labels.append("MMSE")
 
     print("Trying RMSE")
-    epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, calculate_precision = False, save_model = False)
-    plot_data.append(epoch_train_loss[10:])
+    epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
+    plot_data_train.append(epoch_train_loss[10:])
+    plot_data_dev.append(epoch_dev_loss[10:])
     labels.append("RMSE")
 
-    plot_images(plot_data, labels, "Epoch", "Error", "images/VaryingLossFunction.png")
+    plot_images(plot_data_train, labels, "Epoch", "Error", "images/VaryingLossFunction_Train.png")
+    plot_images(plot_data_dev, labels, "Epoch", "Error", "images/VaryingLossFunction_Dev.png")
 
+def experiment_hidden_dim():
+    print("Experimenting with hidden dimensions...")
+    hidden_dims = [4, 8, 16]
+
+    plot_data_train = []
+    plot_data_dev = []
+    labels = []
+    for hidden_dim in hidden_dims:
+        print("Trying hidden dimension: " + str(hidden_dim))
+        epoch_train_loss, epoch_dev_loss = train(hidden_dim, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
+        plot_data_train.append(epoch_train_loss[10:])
+        plot_data_dev.append(epoch_dev_loss[10:])
+        labels.append("Hidden dimension: " + str(hidden_dim))
+    plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingHiddenDim_RMSE_Train.png")
+    plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingHiddenDim_RMSE_Dev.png")
+
+def experiment_num_stack():
+    print("Experimenting with number of stacks...")
+    num_stacks = [4, 8, 16]
+
+    plot_data_train = []
+    plot_data_dev = []
+    labels = []
+    for num_stack in num_stacks:
+        print("Trying number of stacks: " + str(num_stack))
+        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, num_stack, LEARNING_RATE, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = False, save_model = False)
+        plot_data_train.append(epoch_train_loss[10:])
+        plot_data_dev.append(epoch_dev_loss[10:])
+        labels.append("Number of stacks: " + str(num_stack))
+    plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingNumStack_RMSE_Train.png")
+    plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingNumStack_RMSE_Dev.png")
+
+def experiment_optimizer():
+    print("Experimenting with optimizer...")
+    optimizers = ['Adam', 'SGD', 'RMSProp']
+
+    plot_data_train = []
+    plot_data_dev = []
+    labels = []
+    for optimizer in optimizers:
+        print("Trying optimizer: " + str(optimizer))
+        epoch_train_loss, epoch_dev_loss = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, optimizer, calculate_precision = False, save_model = False)
+        plot_data_train.append(epoch_train_loss[10:])
+        plot_data_dev.append(epoch_dev_loss[10:])
+        labels.append("Optimizer: " + str(optimizer))
+    plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/VaryingOptimizer_RMSE_Train.png")
+    plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingOptimizer_RMSE_Dev.png")
 
 def run_experiments():
     experiment_learning_rate()
     experiment_loss_functions()
+    experiment_hidden_dim()
+    experiment_num_stack()
+    experiment_optimizer()
 
 ####################################################################################################
 # USER INTERACTION FOR TRAINING AND TESTING MODELS
@@ -335,7 +407,7 @@ mode = sys.argv[1]
 
 if (mode == 'train'):
     # Training on train data
-    train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, calculate_precision=True, save_model=True)
+    train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, OPTIMIZER, calculate_precision=False, save_model=True)
 
 elif (mode == 'test'):
     # Testing on test data
