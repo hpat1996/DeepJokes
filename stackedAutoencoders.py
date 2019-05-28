@@ -280,10 +280,10 @@ def test(model, loss_function):
 def plot_images(plot_data, labels, xlabel, ylabel, filename):
     refined_data = []
     for data in plot_data:
-        refined_data.append(list(filter(lambda x: x[1] < 5.0, data)))
+        refined_data.append(list(filter(lambda x: x[1] < 10, data)))
 
     plt.clf()
-    for data, label in zip(plot_data, labels):
+    for data, label in zip(refined_data, labels):
         xs = [x[0] for x in data]
         ys = [y[1] for y in data]
         plt.plot(xs, ys, label=label)
