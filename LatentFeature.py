@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 import matplotlib.pyplot as plt
 from numpy.random import rand
 
@@ -154,6 +155,12 @@ def SVD(R):
     U, S, V = np.linalg.svd(R, full_matrices=False)
     return U[:,:K] @ np.diag(S[:K]) @ V[:K,:]
 
+def sparse_svd():
+    R = R.astype(float)
+    R[R == DATASET_UNKNOWN_RATING] = np.nan
+    U, S, V = sp.sparse.linalg.svds(R, k=K)
+    return U @ np.diag(S) @ V
+
 ####################################################################################################
 # Run Code
 ####################################################################################################
@@ -183,5 +190,15 @@ def run_svd():
     with open('results/SVD_Result.txt', 'w') as f:
         f.write('Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
 
+def run_sparse_svd():
+    predicted = SVD(train_data)
+    test_error = getLoss(predicted, test_data, LOSS_FUNCTION)
+
+    print('Sparse SVD Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
+
+    with open('results/Sparse_SVD_Result.txt', 'w') as f:
+        f.write('Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
+
 # run_latent()
 run_svd()
+run_sparse_svd()
