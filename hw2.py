@@ -129,7 +129,8 @@ def hw2_rec(R):
     return cf_user, cf_item
 
 def run():
-    cf_user, cf_item = hw2_rec(train_data)
+    mask = train_data != NORMALIZED_UNKNOWN_RATING
+    cf_user, cf_item = hw2_rec(train_data * mask)
 
     # Get Loss
     RMSE_user = getLoss(cf_user, dev_data, loss_function='RMSE')
