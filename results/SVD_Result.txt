@@ -1,0 +1,1 @@
+Loss function: MMSE -> Test error: 1.1539533227307586
