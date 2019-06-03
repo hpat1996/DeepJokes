@@ -1,29 +1,29 @@
-Number of Stacks: 3	RMSE Train: (100, 1.0741082429885864)
-Number of Stacks: 6	RMSE Train: (100, 1.074156403541565)
-Number of Stacks: 9	RMSE Train: (100, 1.081078290939331)
-Number of Stacks: 12	RMSE Train: (100, 1.0741221904754639)
-Number of Stacks: 15	RMSE Train: (100, 1.0741182565689087)
+Number of Stacks: 3	RMSE Train: (100, 1.0101673603057861)
+Number of Stacks: 6	RMSE Train: (100, 1.010280966758728)
+Number of Stacks: 9	RMSE Train: (100, 1.0101661682128906)
+Number of Stacks: 12	RMSE Train: (100, 1.0101557970046997)
+Number of Stacks: 15	RMSE Train: (100, 1.0101627111434937)
 
-Number of Stacks: 3	RMSE Dev: (100, 1.076939582824707)
-Number of Stacks: 6	RMSE Dev: (100, 1.0769022703170776)
-Number of Stacks: 9	RMSE Dev: (100, 1.083736777305603)
-Number of Stacks: 12	RMSE Dev: (100, 1.0769482851028442)
-Number of Stacks: 15	RMSE Dev: (100, 1.0769349336624146)
+Number of Stacks: 3	RMSE Dev: (100, 1.0051697492599487)
+Number of Stacks: 6	RMSE Dev: (100, 1.0051796436309814)
+Number of Stacks: 9	RMSE Dev: (100, 1.005175232887268)
+Number of Stacks: 12	RMSE Dev: (100, 1.0051257610321045)
+Number of Stacks: 15	RMSE Dev: (100, 1.0051394701004028)
 
-Number of Stacks: 3	 Precision: 0.905539233077135
-Number of Stacks: 6	 Precision: 0.905539233077135
-Number of Stacks: 9	 Precision: 0.9055337850445553
-Number of Stacks: 12	 Precision: 0.905539233077135
-Number of Stacks: 15	 Precision: 0.905539233077135
+Number of Stacks: 3	 Precision: 0.8674069289030846
+Number of Stacks: 6	 Precision: 0.8674069289030846
+Number of Stacks: 9	 Precision: 0.8674069289030845
+Number of Stacks: 12	 Precision: 0.8674069289030846
+Number of Stacks: 15	 Precision: 0.8674069289030846
 
-Number of Stacks: 3	 Recall: 0.881431095431626
-Number of Stacks: 6	 Recall: 0.881431095431626
-Number of Stacks: 9	 Recall: 0.8813819942745315
-Number of Stacks: 12	 Recall: 0.881431095431626
-Number of Stacks: 15	 Recall: 0.881431095431626
+Number of Stacks: 3	 Recall: 0.8913453326703361
+Number of Stacks: 6	 Recall: 0.8913453326703361
+Number of Stacks: 9	 Recall: 0.8913390255778413
+Number of Stacks: 12	 Recall: 0.8913453326703361
+Number of Stacks: 15	 Recall: 0.8913453326703361
 
-Number of Stacks: 3	 F1: 0.8933225419960636
-Number of Stacks: 6	 F1: 0.8933225419960636
-Number of Stacks: 9	 F1: 0.8932946729584124
-Number of Stacks: 12	 F1: 0.8933225419960636
-Number of Stacks: 15	 F1: 0.8933225419960636
+Number of Stacks: 3	 F1: 0.8792132177979273
+Number of Stacks: 6	 F1: 0.8792132177979273
+Number of Stacks: 9	 F1: 0.8792101495023833
+Number of Stacks: 12	 F1: 0.8792132177979273
+Number of Stacks: 15	 F1: 0.8792132177979273

@@ -1,19 +1,19 @@
-Optimizer: SGD	RMSE Train: (100, 1.0756572484970093)
-Optimizer: RMSprop	RMSE Train: (100, 1.0754320621490479)
-Optimizer: Adam	RMSE Train: (100, 1.074864149093628)
+Optimizer: SGD	RMSE Train: (100, 2.9082977771759033)
+Optimizer: RMSprop	RMSE Train: (100, 1.0101553201675415)
+Optimizer: Adam	RMSE Train: (100, 1.0102431774139404)
 
-Optimizer: SGD	RMSE Dev: (100, 1.075289249420166)
-Optimizer: RMSprop	RMSE Dev: (100, 1.0749064683914185)
-Optimizer: Adam	RMSE Dev: (100, 1.0744962692260742)
+Optimizer: SGD	RMSE Dev: (100, 3.07448148727417)
+Optimizer: RMSprop	RMSE Dev: (100, 1.0051757097244263)
+Optimizer: Adam	RMSE Dev: (100, 1.0064443349838257)
 
-Optimizer: SGD	 Precision: 0.9068596026872348
-Optimizer: RMSprop	 Precision: 0.9059951923275836
-Optimizer: Adam	 Precision: 0.9059951923275836
+Optimizer: SGD	 Precision: 1.0
+Optimizer: RMSprop	 Precision: 0.8674069289030846
+Optimizer: Adam	 Precision: 0.8674069289030846
 
-Optimizer: SGD	 Recall: 0.8779695810365471
-Optimizer: RMSprop	 Recall: 0.8815345825005793
-Optimizer: Adam	 Recall: 0.8815345825005793
+Optimizer: SGD	 Recall: 0.5262935672355321
+Optimizer: RMSprop	 Recall: 0.8913453326703361
+Optimizer: Adam	 Recall: 0.8913453326703361
 
-Optimizer: SGD	 F1: 0.8921807786324266
-Optimizer: RMSprop	 F1: 0.8935975275632039
-Optimizer: Adam	 F1: 0.8935975275632039
+Optimizer: SGD	 F1: 0.6896360943049383
+Optimizer: RMSprop	 F1: 0.8792132177979273
+Optimizer: Adam	 F1: 0.8792132177979273
