@@ -1,3 +1,4 @@
+import time
 import sys
 import numpy as np
 
@@ -43,12 +44,13 @@ NUM_DEV_TEST_JOKES          = NUM_DEV_JOKES + NUM_TEST_JOKES
 # Hyperparameters for the model
 ACTIVATION                  = 'ReLU'
 HIDDEN_DIM                  = 5
-NUM_STACKS                  = 6
-LEARNING_RATE               = 0.04
+NUM_STACKS                  = 4
+LEARNING_RATE               = 0.06
 WEIGHT_DECAY                = 0.0
 LOSS_FUNCTION               = 'MMSE'
-NUM_ITERATIONS              = 100
+NUM_ITERATIONS              = 50 * NUM_STACKS
 OPTIMIZER                   = 'Adam'
+MODEL_NAME                  = 'stackedAutoencoder.model'
 
 print("\n")
 print("Initializing...")
@@ -126,9 +128,11 @@ class StackedAutoEncoder(nn.Module):
                     nn.Sequential(nn.Linear(input_dim, hidden_dim), F, nn.Linear(hidden_dim, output_dim))
                     for i in range(num_stacks)])
 
-    def forward(self, x):
-        for ae in self.ae:
-            x = ae(x)
+    def forward(self, x, n):
+        for i in range(n - 1):
+            self.ae[i].requires_grad = False
+        for i in range(n):
+            x = self.ae[i](x)
         return x
 
 ####################################################################################################
@@ -214,7 +218,8 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
     epoch_train_loss = []
     epoch_dev_loss = []
     for i in range(num_iterations):
-        predicted_ratings = stackedAutoEncoder(train_data)
+        n = int(i / (num_iterations / num_stacks)) + 1
+        predicted_ratings = stackedAutoEncoder(train_data, n)
 
         opt.zero_grad() 
         loss = getLoss(predicted_ratings, train_data, loss_function)
@@ -223,7 +228,7 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
 
         epoch_train_loss.append((i + 1, loss.data.item()))
 
-        dev_loss = dev(stackedAutoEncoder, loss_function)
+        dev_loss = dev(stackedAutoEncoder, loss_function, n)
         epoch_dev_loss.append((i + 1, dev_loss))
 
         print("Epoch #", (i + 1), ":\t Training loss: ", round(loss.data.item(), 8), "\t Dev loss: ", round(dev_loss, 8))
@@ -233,7 +238,7 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
 
     if (save_model):
         print("Saving model...")
-        torch.save(stackedAutoEncoder, "model")
+        torch.save(stackedAutoEncoder, MODEL_NAME)
         print("Saved model.")
  
     if (calculate_precision):
@@ -254,14 +259,14 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
    
     return (epoch_train_loss, epoch_dev_loss)
 
-def dev(model, loss_function):
-    predicted_ratings = model(dev_data)
+def dev(model, loss_function, num_stacks):
+    predicted_ratings = model(dev_data, num_stacks)
     dev_loss = getLoss(predicted_ratings, dev_data, loss_function).data.item()
     return dev_loss
 
-def test(model, loss_function):
+def test(model, loss_function, num_stacks):
     print("Testing...")
-    predicted_ratings = model(test_data)
+    predicted_ratings = model(test_data, num_stacks)
     test_loss = getLoss(predicted_ratings, test_data, loss_function).data.item()
     print("Loss on test data: ", test_loss)
 
@@ -412,15 +417,18 @@ mode = sys.argv[1]
 
 if (mode == 'train'):
     # Training on train data
+    start = time.time()
     train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, OPTIMIZER, calculate_precision=False, save_model=True)
+    end = time.time()
+    print("Training time: " + str(round(end - start, 2)) + " seconds")
 
 elif (mode == 'test'):
     # Testing on test data
     print("Loading model...")
-    stackedAutoEncoder = torch.load("model")
+    stackedAutoEncoder = torch.load(MODEL_NAME)
     print("Loaded model.")
 
-    test(stackedAutoEncoder, LOSS_FUNCTION)
+    test(stackedAutoEncoder, LOSS_FUNCTION, NUM_STACKS)
 
 elif (mode == 'exp'):
     # Run the experiments
