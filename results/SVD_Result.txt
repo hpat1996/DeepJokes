@@ -1,7 +1,11 @@
-SVD K: 10 and Loss function: MMSE -> Dev error: 1.0522930353450524
-SVD K: 15 and Loss function: MMSE -> Dev error: 1.051933912916998
-SVD K: 20 and Loss function: MMSE -> Dev error: 1.1027660705258435
+SVD: K: 10 and Loss function: MMSE -> Train error: 0.5421675058278703
+SVD: K: 15 and Loss function: MMSE -> Train error: 0.4589089507276053
+SVD: K: 20 and Loss function: MMSE -> Train error: 0.3969007612306189
 
-SVD K: 10 and Loss function: MMSE -> Test error: 1.1486564175249068
-SVD K: 15 and Loss function: MMSE -> Test error: 1.1460942744258193
-SVD K: 20 and Loss function: MMSE -> Test error: 1.1340804966933238
+SVD: K: 10 and Loss function: MMSE -> Dev error: 1.0502687936190245
+SVD: K: 15 and Loss function: MMSE -> Dev error: 1.0493455863139567
+SVD: K: 20 and Loss function: MMSE -> Dev error: 1.0989065818988535
+
+SVD: K: 10 and Loss function: MMSE -> Test error: 1.1493011193106621
+SVD: K: 15 and Loss function: MMSE -> Test error: 1.1466695428398868
+SVD: K: 20 and Loss function: MMSE -> Test error: 1.1359120764439319

@@ -1,7 +1,11 @@
-Sparse SVD: K: 10 and Loss function: MMSE -> Dev error: 11.377664602611377
-Sparse SVD: K: 15 and Loss function: MMSE -> Dev error: 11.377664602611377
-Sparse SVD: K: 20 and Loss function: MMSE -> Dev error: 11.377664602611377
+Sparse SVD: K: 10 and Loss function: MMSE -> Train error: 10.954590244257162
+Sparse SVD: K: 15 and Loss function: MMSE -> Train error: 10.954590244257162
+Sparse SVD: K: 20 and Loss function: MMSE -> Train error: 10.954590244257162
 
-Sparse SVD: K: 10 and Loss function: MMSE -> Test error: 11.444210900778344
-Sparse SVD: K: 15 and Loss function: MMSE -> Test error: 11.444210900778344
-Sparse SVD: K: 20 and Loss function: MMSE -> Test error: 11.444210900778344
+Sparse SVD: K: 10 and Loss function: MMSE -> Dev error: 11.357476768955463
+Sparse SVD: K: 15 and Loss function: MMSE -> Dev error: 11.357476768955463
+Sparse SVD: K: 20 and Loss function: MMSE -> Dev error: 11.357476768955463
+
+Sparse SVD: K: 10 and Loss function: MMSE -> Test error: 11.414333982552906
+Sparse SVD: K: 15 and Loss function: MMSE -> Test error: 11.414333982552906
+Sparse SVD: K: 20 and Loss function: MMSE -> Test error: 11.414333982552906
