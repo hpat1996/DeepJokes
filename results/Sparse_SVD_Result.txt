@@ -1,1 +1,7 @@
-Loss function: MMSE -> Test error: 1.147813420135127
+Sparse SVD: K: 10 and Loss function: MMSE -> Dev error: 11.377664602611377
+Sparse SVD: K: 15 and Loss function: MMSE -> Dev error: 11.377664602611377
+Sparse SVD: K: 20 and Loss function: MMSE -> Dev error: 11.377664602611377
+
+Sparse SVD: K: 10 and Loss function: MMSE -> Test error: 11.444210900778344
+Sparse SVD: K: 15 and Loss function: MMSE -> Test error: 11.444210900778344
+Sparse SVD: K: 20 and Loss function: MMSE -> Test error: 11.444210900778344

@@ -1,1 +1,7 @@
-Loss function: MMSE -> Test error: 1.147813420135127
+SVD K: 10 and Loss function: MMSE -> Dev error: 1.0522930353450524
+SVD K: 15 and Loss function: MMSE -> Dev error: 1.051933912916998
+SVD K: 20 and Loss function: MMSE -> Dev error: 1.1027660705258435
+
+SVD K: 10 and Loss function: MMSE -> Test error: 1.1486564175249068
+SVD K: 15 and Loss function: MMSE -> Test error: 1.1460942744258193
+SVD K: 20 and Loss function: MMSE -> Test error: 1.1340804966933238

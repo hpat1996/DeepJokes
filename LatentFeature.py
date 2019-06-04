@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sp
+from scipy.sparse.linalg import svds
 import matplotlib.pyplot as plt
 from numpy.random import rand
 
@@ -148,17 +149,17 @@ def latent_feature(R):
     else:
         return P @ np.transpose(Q)
 
-def SVD(R):
+def SVD(R, K=K):
     R = R.astype(float)
     # R[R == DATASET_UNKNOWN_RATING] = np.nan
     R[R == DATASET_UNKNOWN_RATING] = 3 # Set missing data to 0 rating (3 in normalized)
     U, S, V = np.linalg.svd(R, full_matrices=False)
     return U[:,:K] @ np.diag(S[:K]) @ V[:K,:]
 
-def sparse_svd():
+def sparse_svd(R, K=K):
     R = R.astype(float)
     R[R == DATASET_UNKNOWN_RATING] = np.nan
-    U, S, V = sp.sparse.linalg.svds(R, k=K)
+    U, S, V = svds(R, k=K)
     return U @ np.diag(S) @ V
 
 ####################################################################################################
@@ -182,22 +183,44 @@ def run_latent():
     fig.savefig('results/Latent_Training_Errors.png')
 
 def run_svd():
-    predicted = SVD(train_data)
-    test_error = getLoss(predicted, test_data, LOSS_FUNCTION)
-
-    print('SVD Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
+    kvals = [10, 15, 20]
+    dev_errors = []
+    test_errors = []
+    for kval in kvals:
+        predicted = SVD(train_data, K = kval)
+        dev_error = getLoss(predicted, dev_data, LOSS_FUNCTION)
+        test_error = getLoss(predicted, test_data, LOSS_FUNCTION)
+        print('SVD K: ' + str(kval) + ' and Loss function: ' + LOSS_FUNCTION + ' -> Dev error: ' + str(dev_error))
+        print('SVD K: ' + str(kval) + ' and Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
+        dev_errors.append(dev_error)
+        test_errors.append(test_error)
 
     with open('results/SVD_Result.txt', 'w') as f:
-        f.write('Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
+        for idx in range(len(kvals)):
+            f.write('SVD K: ' + str(kvals[idx]) + ' and Loss function: ' + LOSS_FUNCTION + ' -> Dev error: ' + str(dev_errors[idx]) + '\n')
+        f.write('\n')
+        for idx in range(len(kvals)):
+            f.write('SVD K: ' + str(kvals[idx]) + ' and Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_errors[idx]) + '\n')
 
 def run_sparse_svd():
-    predicted = SVD(train_data)
-    test_error = getLoss(predicted, test_data, LOSS_FUNCTION)
-
-    print('Sparse SVD Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
+    kvals = [10, 15, 20]
+    dev_errors = []
+    test_errors = []
+    for kval in kvals:
+        predicted = sparse_svd(train_data)
+        dev_error = getLoss(predicted, dev_data, LOSS_FUNCTION)
+        test_error = getLoss(predicted, test_data, LOSS_FUNCTION)
+        print('Sparse SVD: K: ' + str(kval) + ' and Loss function: ' + LOSS_FUNCTION + ' -> Dev error: ' + str(dev_error))
+        print('Sparse SVD: K: ' + str(kval) + ' and Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
+        dev_errors.append(dev_error)
+        test_errors.append(test_error)
 
     with open('results/Sparse_SVD_Result.txt', 'w') as f:
-        f.write('Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_error))
+        for idx in range(len(kvals)):
+            f.write('Sparse SVD: K: ' + str(kvals[idx]) + ' and Loss function: ' + LOSS_FUNCTION + ' -> Dev error: ' + str(dev_errors[idx]) + '\n')
+        f.write('\n')
+        for idx in range(len(kvals)):
+            f.write('Sparse SVD: K: ' + str(kvals[idx]) + ' and Loss function: ' + LOSS_FUNCTION + ' -> Test error: ' + str(test_errors[idx]) + '\n')
 
 # run_latent()
 run_svd()
