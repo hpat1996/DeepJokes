@@ -233,7 +233,7 @@ def train(hidden_dim, activation, num_stacks, learing_rate, weight_decay, loss_f
         end_time = time.time() - start_time
 
         epoch_train_loss.append((i + 1, loss.data.item()))
-        time_dev_loss.append((end_time, loss.data.item()))
+        time_train_loss.append((end_time, loss.data.item()))
 
         dev_loss = dev(stackedAutoEncoder, loss_function, n)
         epoch_dev_loss.append((i + 1, dev_loss))
