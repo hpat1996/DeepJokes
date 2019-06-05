@@ -167,6 +167,7 @@ def Precision_Recall_TopK(predicted, actual, K = 10):
 
     precision   = 0
     recall      = 0
+
     for i in range(n):
         relevant_items  = set(filter(lambda item: actual[i][item] != 0, range(d)))
         topK_pred       = np.argsort(-predicted[i])[:K]
@@ -265,14 +266,14 @@ def train(hidden_dim, activation, num_hidden_layers, learing_rate, weight_decay,
         precision_train,    recall_train,   F1_train    = Precision_Recall_TopK(deepAutoEncoder(train_data), train_data)
         precision_dev,      recall_dev,     F1_dev      = Precision_Recall_TopK(deepAutoEncoder(dev_data), dev_data)
 
-        print("Precision of train data: " + str(precision_train))
-        print("Recall on train data: " + str(recall_train))
-        print("F1 score for train data: " + str(F1_train))
+        print("Precision of train data: "   + str(precision_train))
+        print("Recall on train data: "      + str(recall_train))
+        print("F1 score for train data: "   + str(F1_train))
         print()
 
-        print("Precision of dev data: " + str(precision_dev))
-        print("Recall on dev data: " + str(recall_dev))
-        print("F1 score for dev data: " + str(F1_dev))
+        print("Precision of dev data: "     + str(precision_dev))
+        print("Recall on dev data: "        + str(recall_dev))
+        print("F1 score for dev data: "     + str(F1_dev))
         print()
 
         train_metrics   = (epoch_train_loss, time_train_loss, precision_train, recall_train, F1_train)
@@ -337,7 +338,7 @@ if (mode == 'train'):
     time_data_dev       = []
     labels = []
 
-    train_metrics, dev_metrics = train(HIDDEN_DIM, ACTIVATION, NUM_HIDDEN_LAYERS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, OPTIMIZER, calculate_precision=False, save_model=True)
+    train_metrics, dev_metrics = train(HIDDEN_DIM, ACTIVATION, NUM_HIDDEN_LAYERS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, OPTIMIZER, calculate_precision=True, save_model=True)
 
     plot_data_train.append(train_metrics[0])
     plot_data_dev.append(dev_metrics[0])
@@ -357,7 +358,7 @@ elif (mode == 'test'):
     deepAutoEncoder = torch.load(MODEL_NAME)
     print("Loaded model.")
 
-    test(deepAutoEncoder, LOSS_FUNCTION, NUM_HIDDEN_LAYERS)
+    test(deepAutoEncoder, LOSS_FUNCTION)
 
 else:
     print("Usage: python3 deepAutoencoders.py <train | test>")
