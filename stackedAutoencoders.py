@@ -43,14 +43,14 @@ NUM_TEST_JOKES              = 0.2
 NUM_DEV_TEST_JOKES          = NUM_DEV_JOKES + NUM_TEST_JOKES
 
 # Hyperparameters for the model
-ACTIVATION                  = 'ReLU'
-HIDDEN_DIM                  = 5
-NUM_STACKS                  = 4
-LEARNING_RATE               = 0.06
+ACTIVATION                  = 'Sigmoid'
+HIDDEN_DIM                  = 16
+NUM_STACKS                  = 10
+LEARNING_RATE               = 0.03
 WEIGHT_DECAY                = 0.0
 LOSS_FUNCTION               = 'RMSE'
 NUM_ITERATIONS              = 200
-OPTIMIZER                   = 'Adam'
+OPTIMIZER                   = 'RMSProp'
 MODEL_NAME                  = 'model.stackedAutoencoder'
 
 print("\n")
