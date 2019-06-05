@@ -312,16 +312,16 @@ def plot_images(plot_data, labels, xlabel, ylabel, filename):
     plt.clf()
 
 def write_precision_recall(label, train_metrics, dev_metrics):
-    with open("images/PrecisionRecall.txt") as f:
+    with open("images/PrecisionRecall.txt", 'a') as f:
         f.write(label + '\n\n')
 
-        f.write("Precision Train: " + train_metrics[2] + '\n')
-        f.write("Recall Train: " + train_metrics[3] + '\n')
-        f.write("F1 Train: " + train_metrics[4] + '\n\n')
+        f.write("Precision Train: " + str(train_metrics[2]) + '\n')
+        f.write("Recall Train: "    + str(train_metrics[3]) + '\n')
+        f.write("F1 Train: "        + str(train_metrics[4]) + '\n\n')
 
-        f.write("Precision Dev: " + dev_metrics[2] + '\n')
-        f.write("Recall Dev: " + dev_metrics[3] + '\n')
-        f.write("F1 Dev: " + dev_metrics[4] + '\n\n')
+        f.write("Precision Dev: "   + str(dev_metrics[2]) + '\n')
+        f.write("Recall Dev: "      + str(dev_metrics[3]) + '\n')
+        f.write("F1 Dev: "          + str(dev_metrics[4]) + '\n\n')
 
         f.write('\n\n')
 
@@ -367,7 +367,7 @@ def experiment_hidden_dim():
 
 def experiment_num_stack():
     print("Experimenting with number of stacks...")
-    num_stacks = [4, 8, 16]
+    num_stacks = [4, 5, 8, 10, 20]
 
     plot_data_train = []
     plot_data_dev = []
@@ -396,7 +396,7 @@ def experiment_optimizer():
         print("Trying optimizer: " + str(optimizer))
         train_metrics, dev_metrics = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, optimizer, calculate_precision = True, save_model = False)
         plot_data_train.append(train_metrics[0][10:])
-        plot_data_dev.append(dev_time_data_devmetrics[0][10:])
+        plot_data_dev.append(dev_metrics[0][10:])
         label = "Optimizer: " + str(optimizer)
         labels.append(label)
         write_precision_recall(label, train_metrics, dev_metrics)
