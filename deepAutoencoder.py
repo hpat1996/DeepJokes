@@ -45,6 +45,7 @@ NUM_DEV_TEST_JOKES          = NUM_DEV_JOKES + NUM_TEST_JOKES
 ACTIVATION                  = 'ReLU'
 HIDDEN_DIM                  = 75
 NUM_HIDDEN_LAYERS           = 10
+DIMENSION_REDUCTION         = 5
 LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
 LOSS_FUNCTION               = 'RMSE'
@@ -126,14 +127,12 @@ class DeepAutoEncoder(nn.Module):
 
         self.input_layer = nn.Linear(input_dim, hidden_dim);
 
-        dim_reduction = 5
-
         self.hidden_layers_enc = nn.ModuleList([
-                    nn.Sequential(nn.Linear(hidden_dim - ((i - 1) * dim_reduction), hidden_dim - (i * dim_reduction)), F)
+                    nn.Sequential(nn.Linear(hidden_dim - ((i - 1) * DIMENSION_REDUCTION), hidden_dim - (i * DIMENSION_REDUCTION)), F)
                     for i in range(1, 1 + int(num_hidden_layers / 2), 1)])
         
         self.hidden_layers_dec = nn.ModuleList([
-                    nn.Sequential(nn.Linear(hidden_dim - (i * dim_reduction), hidden_dim - ((i - 1) * dim_reduction)), F)
+                    nn.Sequential(nn.Linear(hidden_dim - (i * DIMENSION_REDUCTION), hidden_dim - ((i - 1) * DIMENSION_REDUCTION)), F)
                     for i in range(int(num_hidden_layers / 2), 0, -1)])
 
         self.output_layer = nn.Linear(hidden_dim, output_dim);
@@ -230,8 +229,11 @@ def train(hidden_dim, activation, num_hidden_layers, learing_rate, weight_decay,
 
     print("Training...")
     # Train the model
-    epoch_train_loss = []
-    epoch_dev_loss = []
+    epoch_train_loss    = []
+    epoch_dev_loss      = []
+    time_train_loss     = []
+    time_dev_loss       = []
+    start_time          = time.time()
     for i in range(num_iterations):
         predicted_ratings = deepAutoEncoder(train_data)
 
@@ -240,10 +242,14 @@ def train(hidden_dim, activation, num_hidden_layers, learing_rate, weight_decay,
         loss.backward()
         opt.step()
 
+        end_time = time.time() - start_time
+
         epoch_train_loss.append((i + 1, loss.data.item()))
+        time_train_loss.append((end_time, loss.data.item()))
 
         dev_loss = dev(deepAutoEncoder, loss_function)
         epoch_dev_loss.append((i + 1, dev_loss))
+        time_dev_loss.append((end_time, dev_loss))
 
         print("Epoch #", (i + 1), ":\t Training loss: ", round(loss.data.item(), 8), "\t Dev loss: ", round(dev_loss, 8))
 
@@ -253,7 +259,7 @@ def train(hidden_dim, activation, num_hidden_layers, learing_rate, weight_decay,
     if (save_model):
         print("Saving model...")
         torch.save(deepAutoEncoder, MODEL_NAME)
-        print("Saved model.")
+        print("Saved model.\n")
  
     if (calculate_precision):
         precision_train,    recall_train,   F1_train    = Precision_Recall_TopK(deepAutoEncoder(train_data), train_data)
@@ -269,9 +275,13 @@ def train(hidden_dim, activation, num_hidden_layers, learing_rate, weight_decay,
         print("F1 score for dev data: " + str(F1_dev))
         print()
 
-        return ((epoch_train_loss, precision_train, recall_train, F1_train), (epoch_dev_loss, precision_dev, recall_dev, F1_dev))
+        train_metrics   = (epoch_train_loss, time_train_loss, precision_train, recall_train, F1_train)
+        dev_metrics     = (epoch_dev_loss, time_dev_loss, precision_dev, recall_dev, F1_dev)
+        return (train_metrics, dev_metrics)
    
-    return (epoch_train_loss, epoch_dev_loss)
+    train_metrics   = (epoch_train_loss, time_train_loss)
+    dev_metrics     = (epoch_dev_loss, time_dev_loss)
+    return (train_metrics, dev_metrics)
 
 def dev(model, loss_function):
     predicted_ratings = model(dev_data)
@@ -284,13 +294,34 @@ def test(model, loss_function):
     test_loss = getLoss(predicted_ratings, test_data, loss_function).data.item()
     print("Loss on test data: ", test_loss)
 
-    precision_test, recall_test = Precision_Recall_TopK(deepAutoEncoder(test_data), test_data)
+    precision_test, recall_test, f1_test = Precision_Recall_TopK(deepAutoEncoder(test_data), test_data)
     print("Precision of test data: " + str(precision_test))
     print("Recall on test data: " + str(recall_test))
+    print("F1 on test data: " + str(f1_test))
 
     print("\n")
 
     return test_loss, precision_test, recall_test
+
+####################################################################################################
+# PLOT
+####################################################################################################
+
+def plot_images(plot_data, labels, xlabel, ylabel, filename):
+    refined_data = []
+    for data in plot_data:
+        refined_data.append(list(filter(lambda x: x[1] < 25, data)))
+
+    plt.clf()
+    for data, label in zip(refined_data, labels):
+        xs = [x[0] for x in data]
+        ys = [y[1] for y in data]
+        plt.plot(xs, ys, label=label)
+    plt.legend(loc='upper right')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.savefig(filename)
+    plt.clf()
 
 ####################################################################################################
 # USER INTERACTION FOR TRAINING AND TESTING MODELS
@@ -300,10 +331,25 @@ mode = sys.argv[1]
 
 if (mode == 'train'):
     # Training on train data
-    start = time.time()
-    train(HIDDEN_DIM, ACTIVATION, NUM_HIDDEN_LAYERS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, OPTIMIZER, calculate_precision=False, save_model=True)
-    end = time.time()
-    print("Training time: " + str(round(end - start, 2)) + " seconds")
+    plot_data_train     = []
+    plot_data_dev       = []
+    time_data_train     = []
+    time_data_dev       = []
+    labels = []
+
+    train_metrics, dev_metrics = train(HIDDEN_DIM, ACTIVATION, NUM_HIDDEN_LAYERS, LEARNING_RATE, WEIGHT_DECAY, LOSS_FUNCTION, NUM_ITERATIONS, OPTIMIZER, calculate_precision=False, save_model=True)
+
+    plot_data_train.append(train_metrics[0])
+    plot_data_dev.append(dev_metrics[0])
+    time_data_train.append(train_metrics[1])
+    time_data_dev.append(dev_metrics[1])
+    label = "Deep Autoencoder"
+    labels.append(label)
+
+    plot_images(plot_data_train, labels, "Epoch", "Root Mean squared error", "images/DeepAutoencoder_RMSE_Train.png")
+    plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/DeepAutoencoder_RMSE_Dev.png")
+    plot_images(time_data_train, labels, "Time", "Root Mean squared error", "images/DeepAutoencoder_RMSE_Train_Timed.png")
+    plot_images(time_data_dev, labels, "Time", "Root Mean squared error", "images/DeepAutoencoder_RMSE_Dev_Timed.png")
 
 elif (mode == 'test'):
     # Testing on test data
@@ -317,4 +363,5 @@ else:
     print("Usage: python3 deepAutoencoders.py <train | test>")
 
 print('\n')
+
 
