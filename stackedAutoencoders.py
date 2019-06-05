@@ -335,8 +335,8 @@ def experiment_learning_rate():
     for learning_rate in learning_rates:
         print("Trying learning rate: " + str(learning_rate))
         train_metrics, dev_metrics = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, learning_rate, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = True, save_model = False)
-        plot_data_train.append(train_metrics[0][10:])
-        plot_data_dev.append(dev_metrics[0][10:])
+        plot_data_train.append(train_metrics[0])
+        plot_data_dev.append(dev_metrics[0])
         label = "Learning rate: " + str(learning_rate)
         labels.append(label)
         write_precision_recall(label, train_metrics, dev_metrics)
@@ -375,8 +375,8 @@ def experiment_num_stack():
     for num_stack in num_stacks:
         print("Trying number of stacks: " + str(num_stack))
         train_metrics, dev_metrics = train(HIDDEN_DIM, ACTIVATION, num_stack, LEARNING_RATE, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = True, save_model = False)
-        plot_data_train.append(train_metrics[0][10:])
-        plot_data_dev.append(dev_metrics[0][10:])
+        plot_data_train.append(train_metrics[0])
+        plot_data_dev.append(dev_metrics[0])
         label = "Number of stacks: " + str(num_stack)
         labels.append(label)
         write_precision_recall(label, train_metrics, dev_metrics)
@@ -395,8 +395,8 @@ def experiment_optimizer():
     for optimizer in optimizers:
         print("Trying optimizer: " + str(optimizer))
         train_metrics, dev_metrics = train(HIDDEN_DIM, ACTIVATION, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, optimizer, calculate_precision = True, save_model = False)
-        plot_data_train.append(train_metrics[0][10:])
-        plot_data_dev.append(dev_metrics[0][10:])
+        plot_data_train.append(train_metrics[0])
+        plot_data_dev.append(dev_metrics[0])
         label = "Optimizer: " + str(optimizer)
         labels.append(label)
         write_precision_recall(label, train_metrics, dev_metrics)
@@ -414,8 +414,8 @@ def experiment_activation():
     for activation in activations:
         print("Trying activation: " + str(activation))
         train_metrics, dev_metrics = train(HIDDEN_DIM, activation, NUM_STACKS, LEARNING_RATE, WEIGHT_DECAY, "RMSE", NUM_ITERATIONS, OPTIMIZER, calculate_precision = True, save_model = False)
-        plot_data_train.append(train_metrics[0][10:])
-        plot_data_dev.append(dev_metrics[0][10:])
+        plot_data_train.append(train_metrics[0])
+        plot_data_dev.append(dev_metrics[0])
         label = "Activation: " + str(activation)
         labels.append(label)
         write_precision_recall(label, train_metrics, dev_metrics)
@@ -426,7 +426,7 @@ def experiment_activation():
 def run_experiments():
     if os.path.exists("images/PrecisionRecall.txt"):
         os.remove("images/PrecisionRecall.txt")
-    # experiment_learning_rate()
+    experiment_learning_rate()
     experiment_hidden_dim()
     experiment_num_stack()
     experiment_optimizer()
