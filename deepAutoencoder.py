@@ -47,10 +47,10 @@ HIDDEN_DIM                  = 75
 NUM_HIDDEN_LAYERS           = 10
 LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
-LOSS_FUNCTION               = 'MMSE'
+LOSS_FUNCTION               = 'RMSE'
 NUM_ITERATIONS              = 100
 OPTIMIZER                   = 'Adam'
-MODEL_NAME                  = 'deepAutoencoder.model'
+MODEL_NAME                  = 'model.deepAutoencoder'
 
 print("\n")
 print("Initializing...")

@@ -47,10 +47,10 @@ HIDDEN_DIM                  = 5
 NUM_STACKS                  = 4
 LEARNING_RATE               = 0.06
 WEIGHT_DECAY                = 0.0
-LOSS_FUNCTION               = 'MMSE'
+LOSS_FUNCTION               = 'RMSE'
 NUM_ITERATIONS              = 50 * NUM_STACKS
 OPTIMIZER                   = 'Adam'
-MODEL_NAME                  = 'stackedAutoencoder.model'
+MODEL_NAME                  = 'model.stackedAutoencoder'
 
 print("\n")
 print("Initializing...")
