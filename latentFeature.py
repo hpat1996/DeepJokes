@@ -119,7 +119,7 @@ def Precision_Recall_TopK(predicted, actual, K = 10):
 
     precision   = precision / n
     recall      = recall / n
-    F1          = (precision * recall) / (precision + recall)
+    F1          = 2 * (precision * recall) / (precision + recall)
     return precision, recall, F1
 
 def RMSE(predicted, actual):
@@ -287,6 +287,16 @@ if (mode == 'train'):
     plot_images(time_data_dev, labels, "Time", "Squared error", "images/LatentFeature_RMSE_Dev_Timed.png")
 
     test(P, Q)
+
+    with open("images/Time_Error.txt", "a") as f:
+        f.write(','.join(str(data[0]) for data in train_metrics[1]))
+        f.write('\n')
+        f.write(','.join(str(data[1]) for data in train_metrics[1]))
+        f.write('\n')
+        f.write(','.join(str(data[0]) for data in dev_metrics[1]))
+        f.write('\n')
+        f.write(','.join(str(data[1]) for data in dev_metrics[1]))
+        f.write('\n')
 
 else:
     print("Usage: python3 latentFeature.py train")

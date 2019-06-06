@@ -106,17 +106,17 @@ Training finished.
 
 Precision of train data: 0.8031164908271995
 Recall on train data: 0.2552841951013055
-F1 score for train data: 0.19371014178202825
+F1 score for train data: 0.38742028356
 
 Precision of dev data: 0.919510101884751
 Recall on dev data: 0.7058702758618248
-F1 score for dev data: 0.39932489536693694
+F1 score for dev data: 0.79864979073
 
 Testing...
 Loss on test data:  1.5499683762903378
 Precision of test data: 0.9889301328736245
 Recall on test data: 0.6082333324409224
-F1 on test data: 0.37660532771484895
+F1 on test data: 0.75321065543
 
 
 

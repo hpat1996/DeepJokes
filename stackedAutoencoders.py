@@ -44,13 +44,13 @@ NUM_DEV_TEST_JOKES          = NUM_DEV_JOKES + NUM_TEST_JOKES
 
 # Hyperparameters for the model
 ACTIVATION                  = 'Sigmoid'
-HIDDEN_DIM                  = 16
-NUM_STACKS                  = 10
-LEARNING_RATE               = 0.03
+HIDDEN_DIM                  = 32
+NUM_STACKS                  = 4
+LEARNING_RATE               = 0.04
 WEIGHT_DECAY                = 0.0
 LOSS_FUNCTION               = 'RMSE'
 NUM_ITERATIONS              = 200
-OPTIMIZER                   = 'RMSProp'
+OPTIMIZER                   = 'Adam'
 MODEL_NAME                  = 'model.stackedAutoencoder'
 
 print("\n")
@@ -165,7 +165,7 @@ def Precision_Recall_TopK(predicted, actual, K = 10):
 
     precision   = precision / n
     recall      = recall / n
-    F1          = (precision * recall) / (precision + recall)
+    F1          = 2 * (precision * recall) / (precision + recall)
     return precision, recall, F1
 
 
@@ -347,7 +347,7 @@ def experiment_learning_rate():
 
 def experiment_hidden_dim():
     print("Experimenting with hidden dimensions...")
-    hidden_dims = [4, 8, 16]
+    hidden_dims = [8, 16, 32, 64]
 
     plot_data_train = []
     plot_data_dev = []

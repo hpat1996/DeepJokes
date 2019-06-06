@@ -2,137 +2,118 @@
 
 Initializing...
 Training...
-Epoch # 1 :	 Training loss:  3.30028129 	 Dev loss:  269.07080078
-Epoch # 2 :	 Training loss:  247.9009552 	 Dev loss:  3.30372524
-Epoch # 3 :	 Training loss:  3.25881457 	 Dev loss:  3.27027512
-Epoch # 4 :	 Training loss:  3.23481345 	 Dev loss:  1.6769768
-Epoch # 5 :	 Training loss:  2.27811551 	 Dev loss:  163.69241333
-Epoch # 6 :	 Training loss:  84.64350891 	 Dev loss:  1.51039779
-Epoch # 7 :	 Training loss:  2.40342951 	 Dev loss:  3.1313622
-Epoch # 8 :	 Training loss:  3.13257122 	 Dev loss:  3.1255188
-Epoch # 9 :	 Training loss:  3.1225152 	 Dev loss:  3.31793141
-Epoch # 10 :	 Training loss:  3.2504456 	 Dev loss:  4.57690859
-Epoch # 11 :	 Training loss:  4.03346634 	 Dev loss:  3.05272603
-Epoch # 12 :	 Training loss:  3.05520225 	 Dev loss:  3.00998116
-Epoch # 13 :	 Training loss:  3.02241731 	 Dev loss:  2.90313768
-Epoch # 14 :	 Training loss:  2.94545078 	 Dev loss:  2.27254081
-Epoch # 15 :	 Training loss:  2.42904949 	 Dev loss:  9.38181877
-Epoch # 16 :	 Training loss:  6.35448027 	 Dev loss:  2.47976971
-Epoch # 17 :	 Training loss:  2.62087607 	 Dev loss:  2.57790804
-Epoch # 18 :	 Training loss:  2.66209602 	 Dev loss:  2.59671712
-Epoch # 19 :	 Training loss:  2.6471436 	 Dev loss:  2.49410915
-Epoch # 20 :	 Training loss:  2.56978083 	 Dev loss:  2.19200206
-Epoch # 21 :	 Training loss:  2.41754198 	 Dev loss:  3.30250573
-Epoch # 22 :	 Training loss:  2.17096186 	 Dev loss:  1.58802378
-Epoch # 23 :	 Training loss:  2.10531569 	 Dev loss:  2.00330687
-Epoch # 24 :	 Training loss:  2.27600861 	 Dev loss:  1.79664469
-Epoch # 25 :	 Training loss:  2.15984631 	 Dev loss:  1.27551508
-Epoch # 26 :	 Training loss:  1.75697839 	 Dev loss:  5.34856653
-Epoch # 27 :	 Training loss:  2.61988258 	 Dev loss:  1.29769218
-Epoch # 28 :	 Training loss:  1.80864346 	 Dev loss:  39.00667572
-Epoch # 29 :	 Training loss:  29.98596191 	 Dev loss:  2.13510728
-Epoch # 30 :	 Training loss:  2.24011683 	 Dev loss:  2.04153728
-Epoch # 31 :	 Training loss:  2.15492487 	 Dev loss:  1.56397772
-Epoch # 32 :	 Training loss:  1.92879069 	 Dev loss:  2.54644489
-Epoch # 33 :	 Training loss:  1.5343436 	 Dev loss:  14.92187309
-Epoch # 34 :	 Training loss:  6.69765997 	 Dev loss:  1.31594801
-Epoch # 35 :	 Training loss:  1.68735003 	 Dev loss:  1.60663986
-Epoch # 36 :	 Training loss:  1.82538593 	 Dev loss:  1.59030032
-Epoch # 37 :	 Training loss:  1.79981744 	 Dev loss:  1.18176997
-Epoch # 38 :	 Training loss:  1.55069017 	 Dev loss:  2.11764598
-Epoch # 39 :	 Training loss:  1.38868928 	 Dev loss:  1.51197898
-Epoch # 40 :	 Training loss:  1.65806329 	 Dev loss:  2.05867934
-Epoch # 41 :	 Training loss:  2.03590941 	 Dev loss:  1.30255473
-Epoch # 42 :	 Training loss:  1.27788091 	 Dev loss:  8.11114883
-Epoch # 43 :	 Training loss:  4.59112644 	 Dev loss:  1.33068454
-Epoch # 44 :	 Training loss:  1.3024987 	 Dev loss:  1.41861975
-Epoch # 45 :	 Training loss:  1.32943487 	 Dev loss:  2.6402998
-Epoch # 46 :	 Training loss:  2.00938034 	 Dev loss:  1.98089147
-Epoch # 47 :	 Training loss:  1.72674322 	 Dev loss:  1.11993468
-Epoch # 48 :	 Training loss:  1.28237212 	 Dev loss:  3.04136539
-Epoch # 49 :	 Training loss:  2.14988256 	 Dev loss:  1.53918099
-Epoch # 50 :	 Training loss:  1.60141933 	 Dev loss:  1.51283169
-Epoch # 51 :	 Training loss:  1.62443244 	 Dev loss:  1.47406673
-Epoch # 52 :	 Training loss:  1.59867203 	 Dev loss:  1.42475188
-Epoch # 53 :	 Training loss:  1.56231844 	 Dev loss:  1.36560059
-Epoch # 54 :	 Training loss:  1.51569569 	 Dev loss:  1.29822516
-Epoch # 55 :	 Training loss:  1.45922375 	 Dev loss:  1.22382462
-Epoch # 56 :	 Training loss:  1.3918227 	 Dev loss:  1.14588106
-Epoch # 57 :	 Training loss:  1.31372845 	 Dev loss:  1.07570326
-Epoch # 58 :	 Training loss:  1.22774506 	 Dev loss:  1.04104698
-Epoch # 59 :	 Training loss:  1.14528894 	 Dev loss:  1.09350777
-Epoch # 60 :	 Training loss:  1.09984457 	 Dev loss:  1.23870587
-Epoch # 61 :	 Training loss:  1.13057077 	 Dev loss:  1.27241051
-Epoch # 62 :	 Training loss:  1.14258242 	 Dev loss:  1.19372904
-Epoch # 63 :	 Training loss:  1.10310948 	 Dev loss:  1.09506845
-Epoch # 64 :	 Training loss:  1.05513728 	 Dev loss:  1.03671598
-Epoch # 65 :	 Training loss:  1.0287621 	 Dev loss:  1.02256906
-Epoch # 66 :	 Training loss:  1.02376676 	 Dev loss:  1.0322839
-Epoch # 67 :	 Training loss:  1.02916384 	 Dev loss:  1.04736924
-Epoch # 68 :	 Training loss:  1.0360775 	 Dev loss:  1.05790615
-Epoch # 69 :	 Training loss:  1.0403074 	 Dev loss:  1.06172347
-Epoch # 70 :	 Training loss:  1.04131246 	 Dev loss:  1.05876434
-Epoch # 71 :	 Training loss:  1.03937721 	 Dev loss:  1.05085194
-Epoch # 72 :	 Training loss:  1.03553009 	 Dev loss:  1.04037583
-Epoch # 73 :	 Training loss:  1.03092754 	 Dev loss:  1.02991951
-Epoch # 74 :	 Training loss:  1.02666628 	 Dev loss:  1.02163875
-Epoch # 75 :	 Training loss:  1.02348399 	 Dev loss:  1.01667106
-Epoch # 76 :	 Training loss:  1.02158582 	 Dev loss:  1.01492667
-Epoch # 77 :	 Training loss:  1.02068138 	 Dev loss:  1.01534963
-Epoch # 78 :	 Training loss:  1.02021682 	 Dev loss:  1.01652873
-Epoch # 79 :	 Training loss:  1.01968539 	 Dev loss:  1.01730633
-Epoch # 80 :	 Training loss:  1.01880336 	 Dev loss:  1.01709282
-Epoch # 81 :	 Training loss:  1.01758313 	 Dev loss:  1.01587892
-Epoch # 82 :	 Training loss:  1.01623905 	 Dev loss:  1.01402783
-Epoch # 83 :	 Training loss:  1.01503289 	 Dev loss:  1.01201999
-Epoch # 84 :	 Training loss:  1.01414084 	 Dev loss:  1.01023507
-Epoch # 85 :	 Training loss:  1.01359344 	 Dev loss:  1.0088886
-Epoch # 86 :	 Training loss:  1.01331234 	 Dev loss:  1.00804007
-Epoch # 87 :	 Training loss:  1.01316154 	 Dev loss:  1.00764406
-Epoch # 88 :	 Training loss:  1.01301587 	 Dev loss:  1.00761104
-Epoch # 89 :	 Training loss:  1.01280832 	 Dev loss:  1.00784624
-Epoch # 90 :	 Training loss:  1.01253784 	 Dev loss:  1.00826335
-Epoch # 91 :	 Training loss:  1.01225102 	 Dev loss:  1.00878155
-Epoch # 92 :	 Training loss:  1.01200867 	 Dev loss:  1.00931656
-Epoch # 93 :	 Training loss:  1.01185358 	 Dev loss:  1.00977957
-Epoch # 94 :	 Training loss:  1.01179206 	 Dev loss:  1.01008332
-Epoch # 95 :	 Training loss:  1.01179087 	 Dev loss:  1.01015842
-Epoch # 96 :	 Training loss:  1.01179171 	 Dev loss:  1.00997317
-Epoch # 97 :	 Training loss:  1.01173639 	 Dev loss:  1.00954437
-Epoch # 98 :	 Training loss:  1.01158857 	 Dev loss:  1.00893795
-Epoch # 99 :	 Training loss:  1.01134801 	 Dev loss:  1.00825274
-Epoch # 100 :	 Training loss:  1.01104844 	 Dev loss:  1.00759602
+Epoch # 1 :	 Training loss:  3.31941938 	 Dev loss:  88.20582581
+Epoch # 2 :	 Training loss:  61.48852921 	 Dev loss:  3.3558867
+Epoch # 3 :	 Training loss:  3.27081156 	 Dev loss:  3.34181809
+Epoch # 4 :	 Training loss:  3.27748227 	 Dev loss:  3.13992262
+Epoch # 5 :	 Training loss:  3.13813877 	 Dev loss:  6.31236315
+Epoch # 6 :	 Training loss:  3.81454134 	 Dev loss:  3.14287472
+Epoch # 7 :	 Training loss:  3.12280321 	 Dev loss:  3.17591786
+Epoch # 8 :	 Training loss:  3.13960314 	 Dev loss:  3.13430738
+Epoch # 9 :	 Training loss:  3.10477948 	 Dev loss:  3.06707811
+Epoch # 10 :	 Training loss:  3.05125761 	 Dev loss:  2.89668393
+Epoch # 11 :	 Training loss:  2.95208478 	 Dev loss:  2.19125032
+Epoch # 12 :	 Training loss:  2.66830564 	 Dev loss:  7.73356628
+Epoch # 13 :	 Training loss:  2.78321671 	 Dev loss:  4.91449785
+Epoch # 14 :	 Training loss:  3.66739011 	 Dev loss:  2.79700184
+Epoch # 15 :	 Training loss:  2.74680424 	 Dev loss:  2.67548084
+Epoch # 16 :	 Training loss:  2.67763495 	 Dev loss:  2.55623341
+Epoch # 17 :	 Training loss:  2.57303905 	 Dev loss:  2.21254873
+Epoch # 18 :	 Training loss:  2.31166506 	 Dev loss:  2.58713746
+Epoch # 19 :	 Training loss:  1.95748913 	 Dev loss:  1.59855628
+Epoch # 20 :	 Training loss:  1.87277246 	 Dev loss:  1.16156793
+Epoch # 21 :	 Training loss:  1.50003064 	 Dev loss:  6.3964653
+Epoch # 22 :	 Training loss:  3.0208981 	 Dev loss:  1.35682845
+Epoch # 23 :	 Training loss:  1.62314165 	 Dev loss:  1.71854448
+Epoch # 24 :	 Training loss:  1.82109737 	 Dev loss:  1.70224965
+Epoch # 25 :	 Training loss:  1.81071639 	 Dev loss:  1.63353956
+Epoch # 26 :	 Training loss:  1.75422251 	 Dev loss:  1.54955006
+Epoch # 27 :	 Training loss:  1.67616105 	 Dev loss:  1.45943177
+Epoch # 28 :	 Training loss:  1.58822465 	 Dev loss:  1.30320024
+Epoch # 29 :	 Training loss:  1.45887959 	 Dev loss:  1.18306994
+Epoch # 30 :	 Training loss:  1.33290505 	 Dev loss:  1.08975446
+Epoch # 31 :	 Training loss:  1.21230638 	 Dev loss:  1.06179571
+Epoch # 32 :	 Training loss:  1.12685466 	 Dev loss:  1.11685002
+Epoch # 33 :	 Training loss:  1.10419035 	 Dev loss:  1.21680796
+Epoch # 34 :	 Training loss:  1.14244807 	 Dev loss:  1.28356218
+Epoch # 35 :	 Training loss:  1.18849814 	 Dev loss:  1.26771331
+Epoch # 36 :	 Training loss:  1.18831646 	 Dev loss:  1.18106031
+Epoch # 37 :	 Training loss:  1.13554132 	 Dev loss:  1.08434105
+Epoch # 38 :	 Training loss:  1.06916332 	 Dev loss:  1.032287
+Epoch # 39 :	 Training loss:  1.02915668 	 Dev loss:  1.0368675
+Epoch # 40 :	 Training loss:  1.02790833 	 Dev loss:  1.06892943
+Epoch # 41 :	 Training loss:  1.04749012 	 Dev loss:  1.0935818
+Epoch # 42 :	 Training loss:  1.06216443 	 Dev loss:  1.09876561
+Epoch # 43 :	 Training loss:  1.06369472 	 Dev loss:  1.08722901
+Epoch # 44 :	 Training loss:  1.05542386 	 Dev loss:  1.06622851
+Epoch # 45 :	 Training loss:  1.04387832 	 Dev loss:  1.04202092
+Epoch # 46 :	 Training loss:  1.0348804 	 Dev loss:  1.02478266
+Epoch # 47 :	 Training loss:  1.03346705 	 Dev loss:  1.01688874
+Epoch # 48 :	 Training loss:  1.03425264 	 Dev loss:  1.01654565
+Epoch # 49 :	 Training loss:  1.02508867 	 Dev loss:  1.04030645
+Epoch # 50 :	 Training loss:  1.03501093 	 Dev loss:  1.01215005
+Epoch # 51 :	 Training loss:  1.01880109 	 Dev loss:  1.01528084
+Epoch # 52 :	 Training loss:  1.02401328 	 Dev loss:  1.01731849
+Epoch # 53 :	 Training loss:  1.02180421 	 Dev loss:  1.01455498
+Epoch # 54 :	 Training loss:  1.01591635 	 Dev loss:  1.01506495
+Epoch # 55 :	 Training loss:  1.01611662 	 Dev loss:  1.01686561
+Epoch # 56 :	 Training loss:  1.0190196 	 Dev loss:  1.01409638
+Epoch # 57 :	 Training loss:  1.01667106 	 Dev loss:  1.01306903
+Epoch # 58 :	 Training loss:  1.01490617 	 Dev loss:  1.01501679
+Epoch # 59 :	 Training loss:  1.01610231 	 Dev loss:  1.0153091
+Epoch # 60 :	 Training loss:  1.01670659 	 Dev loss:  1.01246834
+Epoch # 61 :	 Training loss:  1.01525474 	 Dev loss:  1.00906956
+Epoch # 62 :	 Training loss:  1.0134989 	 Dev loss:  1.00789011
+Epoch # 63 :	 Training loss:  1.01331866 	 Dev loss:  1.00834262
+Epoch # 64 :	 Training loss:  1.01385498 	 Dev loss:  1.00818717
+Epoch # 65 :	 Training loss:  1.01323771 	 Dev loss:  1.00767875
+Epoch # 66 :	 Training loss:  1.01206934 	 Dev loss:  1.00803459
+Epoch # 67 :	 Training loss:  1.01173401 	 Dev loss:  1.00888586
+Epoch # 68 :	 Training loss:  1.01205122 	 Dev loss:  1.00917757
+Epoch # 69 :	 Training loss:  1.01214921 	 Dev loss:  1.00860572
+Epoch # 70 :	 Training loss:  1.0117377 	 Dev loss:  1.00774193
+Epoch # 71 :	 Training loss:  1.01121938 	 Dev loss:  1.0072298
+Epoch # 72 :	 Training loss:  1.01106536 	 Dev loss:  1.00713408
+Epoch # 73 :	 Training loss:  1.01121438 	 Dev loss:  1.00703895
+Epoch # 74 :	 Training loss:  1.01126444 	 Dev loss:  1.00670791
+Epoch # 75 :	 Training loss:  1.01102138 	 Dev loss:  1.00636292
+Epoch # 76 :	 Training loss:  1.01069832 	 Dev loss:  1.00625622
+Epoch # 77 :	 Training loss:  1.01057184 	 Dev loss:  1.00635266
+Epoch # 78 :	 Training loss:  1.01061928 	 Dev loss:  1.00643122
+Epoch # 79 :	 Training loss:  1.01067579 	 Dev loss:  1.00636923
+Epoch # 80 :	 Training loss:  1.01060963 	 Dev loss:  1.00620759
+Epoch # 81 :	 Training loss:  1.01046193 	 Dev loss:  1.00608325
+Epoch # 82 :	 Training loss:  1.01034415 	 Dev loss:  1.00607085
+Epoch # 83 :	 Training loss:  1.01033628 	 Dev loss:  1.00609422
+Epoch # 84 :	 Training loss:  1.01037383 	 Dev loss:  1.00602984
+Epoch # 85 :	 Training loss:  1.0103693 	 Dev loss:  1.00585902
+Epoch # 86 :	 Training loss:  1.01028705 	 Dev loss:  1.00568593
+Epoch # 87 :	 Training loss:  1.01019406 	 Dev loss:  1.00561512
+Epoch # 88 :	 Training loss:  1.01014578 	 Dev loss:  1.00566411
+Epoch # 89 :	 Training loss:  1.01014495 	 Dev loss:  1.0057565
+Epoch # 90 :	 Training loss:  1.01016498 	 Dev loss:  1.0058111
+Epoch # 91 :	 Training loss:  1.010149 	 Dev loss:  1.00580657
+Epoch # 92 :	 Training loss:  1.01010382 	 Dev loss:  1.00575948
+Epoch # 93 :	 Training loss:  1.01006794 	 Dev loss:  1.00571406
+Epoch # 94 :	 Training loss:  1.01005626 	 Dev loss:  1.00567782
+Epoch # 95 :	 Training loss:  1.01006746 	 Dev loss:  1.00563824
+Epoch # 96 :	 Training loss:  1.01007414 	 Dev loss:  1.00558662
+Epoch # 97 :	 Training loss:  1.01005518 	 Dev loss:  1.00554132
+Epoch # 98 :	 Training loss:  1.01002896 	 Dev loss:  1.00552475
+Epoch # 99 :	 Training loss:  1.01001048 	 Dev loss:  1.00553977
+Epoch # 100 :	 Training loss:  1.01001012 	 Dev loss:  1.00555813
 Training finished.
 
 Saving model...
 Saved model.
 
-Precision of train data: 0.763614606391698
-Recall on train data: 0.35861212788872504
-F1 score for train data: 0.24401616047814653
+Precision of train data: 0.7638200966681497
+Recall on train data: 0.359173502873789
+F1 score for train data: 0.48859395066472056
 
-Precision of dev data: 0.8678942089360709
-Recall on dev data: 0.888283835800313
-F1 score for dev data: 0.4389853291317823
-
-
-
-
-
-Initializing...
-Loading model...
-Loaded model.
-
-
-Initializing...
-Loading model...
-Loaded model.
-Testing...
-Loss on test data:  1.0351206064224243
-Precision of test data: 0.8386740158896854
-Recall on test data: 0.909382408751485
-F1 on test data: 0.4362990724876632
-
+Precision of dev data: 0.8679253729795733
+Recall on dev data: 0.8915293594918257
+F1 score for dev data: 0.8795690364506279
 
 
 
