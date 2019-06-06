@@ -44,6 +44,6 @@ with open("images/Time_Error.txt", "r") as f:
     plot_data_dev.append(timeError(stacked[2:4]))
     plot_data_dev.append(timeError(latent[2:4]))
  
-    labels  = ['DeepAutoencoder', 'StackedAutoencoder', 'LatentFeatures']
+    labels  = ['StackedAutoencoder', 'DeepAutoencoder', 'LatentFeatures']
     plot_images(plot_data_train,    labels, "Time (seconds)", "Root Mean Squared Error", "images/Time_Error_Train.png")
     plot_images(plot_data_dev,      labels, "Time (seconds)", "Root Mean Squared Error", "images/Time_Error_Dev.png")
