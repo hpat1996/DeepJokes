@@ -4678,3 +4678,17 @@ F1 score for dev data: 0.8806898020667134
 
 
 
+
+
+Initializing...
+Loading model...
+Loaded model.
+Testing...
+Loss on test data:  1.037018895149231
+Precision of test data: 0.8422876991423653
+Recall on test data: 0.8879648511123456
+F1 on test data: 0.8645233567233973
+
+
+
+
