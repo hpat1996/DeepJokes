@@ -7,7 +7,7 @@ plt.ioff()
 def plot_images(plot_data, labels, xlabel, ylabel, filename):
     refined_data = []
     for data in plot_data:
-        refined_data.append(list(filter(lambda x: x[0] < 100 and x[1] < 5, data)))
+        refined_data.append(list(filter(lambda x: x[0] < 100 and x[1] < 4, data)))
 
     plt.clf()
     for data, label in zip(refined_data, labels):
