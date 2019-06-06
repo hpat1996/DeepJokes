@@ -405,7 +405,7 @@ def experiment_optimizer():
     plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/VaryingOptimizer_RMSE_Dev.png")
 
 def experiment_activation():
-    print("Experimenting with optimizer...")
+    print("Experimenting with activation function...")
     activations = ['ReLU', 'Tanh', 'Sigmoid']
 
     plot_data_train = []
@@ -459,6 +459,17 @@ if (mode == 'train'):
     plot_images(plot_data_dev, labels, "Epoch", "Root Mean squared error", "images/StackedAutoencoder_RMSE_Dev.png")
     plot_images(time_data_train, labels, "Time", "Root Mean squared error", "images/StackedAutoencoder_RMSE_Train_Timed.png")
     plot_images(time_data_dev, labels, "Time", "Root Mean squared error", "images/StackedAutoencoder_RMSE_Dev_Timed.png")
+
+    with open("images/Time_Error.txt", "a") as f:
+        f.write(','.join(str(data[0]) for data in train_metrics[1]))
+        f.write('\n')
+        f.write(','.join(str(data[1]) for data in train_metrics[1]))
+        f.write('\n')
+        f.write(','.join(str(data[0]) for data in dev_metrics[1]))
+        f.write('\n')
+        f.write(','.join(str(data[1]) for data in dev_metrics[1]))
+        f.write('\n')
+
 
 elif (mode == 'test'):
     # Testing on test data
